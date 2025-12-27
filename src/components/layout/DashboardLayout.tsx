@@ -63,6 +63,7 @@ const adminMenuItems = [
   { icon: Users, label: "Users", href: "/admin/users" },
   { icon: Building2, label: "Hosts", href: "/admin/hosts" },
   { icon: Calendar, label: "Bookings", href: "/admin/bookings" },
+  { icon: IndianRupee, label: "Finance", href: "/admin/finance" },
   { icon: FileText, label: "Reports", href: "/admin/reports" },
   { icon: Shield, label: "Disputes", href: "/admin/disputes" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },

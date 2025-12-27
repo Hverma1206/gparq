@@ -15,6 +15,7 @@ import { toast } from "sonner";
 const HostReviews = () => {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
   const stats = {
     averageRating: 4.7,
@@ -146,14 +147,14 @@ const HostReviews = () => {
         </div>
 
         {/* Reviews Tabs */}
-        <Tabs defaultValue="all">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between mb-4">
             <TabsList>
-              <TabsTrigger value="all">All Reviews</TabsTrigger>
-              <TabsTrigger value="positive">Positive</TabsTrigger>
-              <TabsTrigger value="negative">Needs Response</TabsTrigger>
+              <TabsTrigger value="all">All Reviews ({reviews.length})</TabsTrigger>
+              <TabsTrigger value="positive">Positive ({reviews.filter(r => r.rating >= 4).length})</TabsTrigger>
+              <TabsTrigger value="negative">Needs Response ({reviews.filter(r => !r.hasReply).length})</TabsTrigger>
             </TabsList>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.info("Filter options coming soon")}>
               <Filter className="h-4 w-4" />
               Filter
             </Button>
@@ -259,16 +260,136 @@ const HostReviews = () => {
             ))}
           </TabsContent>
 
-          <TabsContent value="positive">
-            <p className="text-muted-foreground text-center py-8">
-              Showing reviews with 4+ stars
-            </p>
+          <TabsContent value="positive" className="space-y-4">
+            {reviews.filter(r => r.rating >= 4).map((review, index) => (
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+              >
+                <Card className="bg-card border-border">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <span className="font-bold text-green-500">{review.user[0]}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{review.user}</h3>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-muted"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <Badge variant="secondary" className="bg-green-500/10 text-green-500">Positive</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {review.date} • {review.spot}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-foreground">{review.comment}</p>
+                    {review.hasReply && review.hostReply && (
+                      <div className="ml-6 mt-4 p-4 rounded-lg bg-primary/5 border-l-2 border-primary">
+                        <p className="text-sm font-medium text-primary mb-1">Your Reply</p>
+                        <p className="text-sm text-muted-foreground">{review.hostReply}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </TabsContent>
 
-          <TabsContent value="negative">
-            <p className="text-muted-foreground text-center py-8">
-              Showing reviews that need your response
-            </p>
+          <TabsContent value="negative" className="space-y-4">
+            {reviews.filter(r => !r.hasReply).length === 0 ? (
+              <Card className="bg-card border-border">
+                <CardContent className="p-8 text-center">
+                  <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">All reviews have been responded to!</p>
+                </CardContent>
+              </Card>
+            ) : (
+              reviews.filter(r => !r.hasReply).map((review, index) => (
+                <motion.div
+                  key={review.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index }}
+                >
+                  <Card className="bg-card border-border border-yellow-500/50">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                            <span className="font-bold text-yellow-500">{review.user[0]}</span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium">{review.user}</h3>
+                              <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-4 w-4 ${
+                                      i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-muted"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600">Awaiting Reply</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {review.date} • {review.spot}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-foreground mb-4">{review.comment}</p>
+                      
+                      {replyingTo === review.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="Write your reply..."
+                            className="min-h-[80px]"
+                          />
+                          <div className="flex gap-2 justify-end">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setReplyingTo(null)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button size="sm" onClick={() => handleReply(review.id)}>
+                              Post Reply
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button 
+                          className="gap-2"
+                          onClick={() => setReplyingTo(review.id)}
+                        >
+                          <Reply className="h-4 w-4" />
+                          Respond Now
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            )}
           </TabsContent>
         </Tabs>
       </div>
