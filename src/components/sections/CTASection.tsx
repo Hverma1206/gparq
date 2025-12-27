@@ -34,7 +34,7 @@ const CTASection = () => {
           </h2>
 
           <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Join thousands of users who've switched to stress-free parking. Download the app or explore on web.
+            Join 500K+ users who've switched to stress-free parking. EV charging, car wash, valet services — all in one app.
           </p>
 
           {/* CTAs */}

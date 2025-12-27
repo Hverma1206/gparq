@@ -8,21 +8,21 @@ const HowItWorksSection = () => {
       step: "01",
       title: "Search & Discover",
       description:
-        "Enter your destination or browse nearby parking spots. Filter by price, amenities, EV charging, and more.",
+        "Enter your destination or browse nearby parking spots. Filter by price, EV charging, car wash, valet, and more.",
     },
     {
       icon: QrCode,
       step: "02",
-      title: "Book & Pay",
+      title: "Book & Add Services",
       description:
-        "Reserve your spot instantly. Pay securely via UPI, card, or wallet. Get a digital pass on your phone.",
+        "Reserve your spot instantly. Add car wash, valet, or EV charging. Pay securely via UPI, card, or wallet.",
     },
     {
       icon: Car,
       step: "03",
-      title: "Park & Go",
+      title: "Park & Enjoy",
       description:
-        "Arrive at your spot, scan QR or show OTP for entry. Park safely and leave when you're ready.",
+        "Scan QR for entry, enjoy add-on services, rate your experience, and earn referral rewards.",
     },
   ];
 
@@ -114,7 +114,7 @@ const HowItWorksSection = () => {
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-secondary border border-border">
             <CheckCircle2 className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium text-foreground">
-              No hidden fees • Instant confirmation • 24/7 support
+              No hidden fees • EV Charging • Car Wash • Valet • 24/7 support
             </span>
           </div>
         </motion.div>

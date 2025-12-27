@@ -14,8 +14,8 @@ const HeroSection = () => {
 
   const trustBadges = [
     { icon: Shield, label: "100% Verified Spaces" },
-    { icon: CheckCircle, label: "Safe & Secure" },
-    { icon: Zap, label: "EV Ready" },
+    { icon: CheckCircle, label: "Car Wash & Valet" },
+    { icon: Zap, label: "EV Charging" },
   ];
 
   return (
@@ -70,7 +70,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
           >
-            Book parking, charge your EV, and park with confidence — powered by Parq
+            Book parking, charge your EV, add car wash & valet services — all in one app
           </motion.p>
 
           {/* Search Box */}
@@ -145,9 +145,9 @@ const HeroSection = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
             {[
               { value: "50K+", label: "Parking Spaces" },
-              { value: "100+", label: "Cities" },
+              { value: "5K+", label: "EV Chargers" },
               { value: "500K+", label: "Happy Users" },
-              { value: "4.8★", label: "App Rating" },
+              { value: "6", label: "Languages" },
             ].map((stat, index) => (
               <div
                 key={index}
