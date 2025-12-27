@@ -99,6 +99,11 @@ import BlockedUsers from "./pages/user/BlockedUsers";
 import GuestVehicle from "./pages/user/GuestVehicle";
 import SafetyPage from "./pages/user/Safety";
 import FleetManagement from "./pages/user/FleetManagement";
+import EVChargingBooking from "./pages/user/EVChargingBooking";
+import AddOnServices from "./pages/user/AddOnServices";
+import UserReviews from "./pages/user/Reviews";
+import ReferralProgram from "./pages/user/ReferralProgram";
+import NotificationSettings from "./pages/user/NotificationSettings";
 
 // Host Pages
 import HostDashboard from "./pages/host/Dashboard";
@@ -133,6 +138,8 @@ import AdminReports from "./pages/admin/Reports";
 import CityAdmin from "./pages/admin/CityAdmin";
 import RolesPermissions from "./pages/admin/RolesPermissions";
 import FeatureToggles from "./pages/admin/FeatureToggles";
+import FraudDetection from "./pages/admin/FraudDetection";
+import AdminAnalytics from "./pages/admin/Analytics";
 
 // Partner Pages
 import PartnerSignup from "./pages/partner/Signup";
@@ -269,6 +276,11 @@ const App = () => (
           <Route path="/user/guest-vehicle" element={<GuestVehicle />} />
           <Route path="/user/safety" element={<SafetyPage />} />
           <Route path="/user/fleet" element={<FleetManagement />} />
+          <Route path="/user/ev-charging" element={<EVChargingBooking />} />
+          <Route path="/user/services" element={<AddOnServices />} />
+          <Route path="/user/reviews" element={<UserReviews />} />
+          <Route path="/user/referrals" element={<ReferralProgram />} />
+          <Route path="/user/notification-settings" element={<NotificationSettings />} />
           <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
@@ -305,6 +317,8 @@ const App = () => (
           <Route path="/admin/cities" element={<CityAdmin />} />
           <Route path="/admin/roles" element={<RolesPermissions />} />
           <Route path="/admin/features" element={<FeatureToggles />} />
+          <Route path="/admin/fraud" element={<FraudDetection />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           
           {/* Partner Portal */}
           <Route path="/partner/signup" element={<PartnerSignup />} />
