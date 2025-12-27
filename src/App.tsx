@@ -93,6 +93,10 @@ import UserVehicles from "./pages/user/Vehicles";
 import UserNotifications from "./pages/user/Notifications";
 import UserSupport from "./pages/user/Support";
 import UserReferral from "./pages/user/Referral";
+import VehicleDocuments from "./pages/user/VehicleDocuments";
+import FamilyAccounts from "./pages/user/FamilyAccounts";
+import BlockedUsers from "./pages/user/BlockedUsers";
+import GuestVehicle from "./pages/user/GuestVehicle";
 
 // Host Pages
 import HostDashboard from "./pages/host/Dashboard";
@@ -123,6 +127,9 @@ import AdminSupport from "./pages/admin/Support";
 import AdminSettings from "./pages/admin/Settings";
 import AdminApprovals from "./pages/admin/Approvals";
 import AdminReports from "./pages/admin/Reports";
+import CityAdmin from "./pages/admin/CityAdmin";
+import RolesPermissions from "./pages/admin/RolesPermissions";
+import FeatureToggles from "./pages/admin/FeatureToggles";
 
 // Partner Pages
 import PartnerSignup from "./pages/partner/Signup";
@@ -253,6 +260,10 @@ const App = () => (
           <Route path="/user/settings" element={<UserSettings />} />
           <Route path="/user/payment-methods" element={<PaymentMethods />} />
           <Route path="/user/invoice/:id" element={<Invoice />} />
+          <Route path="/user/documents" element={<VehicleDocuments />} />
+          <Route path="/user/family" element={<FamilyAccounts />} />
+          <Route path="/user/blocked" element={<BlockedUsers />} />
+          <Route path="/user/guest-vehicle" element={<GuestVehicle />} />
           <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
@@ -285,6 +296,9 @@ const App = () => (
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/approvals" element={<AdminApprovals />} />
           <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/cities" element={<CityAdmin />} />
+          <Route path="/admin/roles" element={<RolesPermissions />} />
+          <Route path="/admin/features" element={<FeatureToggles />} />
           
           {/* Partner Portal */}
           <Route path="/partner/signup" element={<PartnerSignup />} />

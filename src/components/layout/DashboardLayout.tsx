@@ -29,7 +29,7 @@ import {
   MapPin, Bell, Settings, LogOut, User, 
   Home, Search, Calendar, Wallet, Car,
   LayoutDashboard, List, IndianRupee, BarChart3, Plus,
-  Users, Building2, FileText, Shield, Menu
+  Users, Building2, FileText, Shield, Menu, Flag, MapPinned, Key
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,8 +42,9 @@ const userMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/user/dashboard" },
   { icon: Search, label: "Find Parking", href: "/search" },
   { icon: Calendar, label: "My Bookings", href: "/user/bookings" },
-  { icon: Car, label: "Active Parking", href: "/user/active-parking" },
+  { icon: Car, label: "Vehicles", href: "/user/vehicles" },
   { icon: Wallet, label: "Wallet", href: "/user/wallet" },
+  { icon: Users, label: "Family", href: "/user/family" },
   { icon: User, label: "Profile", href: "/user/profile" },
   { icon: Settings, label: "Settings", href: "/user/settings" },
 ];
@@ -64,8 +65,11 @@ const adminMenuItems = [
   { icon: Building2, label: "Hosts", href: "/admin/hosts" },
   { icon: Calendar, label: "Bookings", href: "/admin/bookings" },
   { icon: IndianRupee, label: "Finance", href: "/admin/finance" },
-  { icon: FileText, label: "Reports", href: "/admin/reports" },
+  { icon: MapPinned, label: "Cities", href: "/admin/cities" },
+  { icon: Key, label: "Roles", href: "/admin/roles" },
+  { icon: Flag, label: "Features", href: "/admin/features" },
   { icon: Shield, label: "Disputes", href: "/admin/disputes" },
+  { icon: FileText, label: "Reports", href: "/admin/reports" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 
