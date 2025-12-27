@@ -33,6 +33,14 @@ const Header = () => {
         { label: "For Hosts", href: "/pricing/hosts" },
       ]
     },
+    { 
+      label: "Partner", 
+      href: "/become-partner",
+      subLinks: [
+        { label: "Become a Partner", href: "/become-partner" },
+        { label: "Partner Login", href: "/partner/dashboard" },
+      ]
+    },
     { label: "For Hosts", href: "/list-your-space" },
   ];
 
