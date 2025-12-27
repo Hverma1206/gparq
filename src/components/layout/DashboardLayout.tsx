@@ -35,7 +35,7 @@ import { toast } from "sonner";
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  type: "user" | "host" | "admin";
+  type: "user" | "host" | "admin" | "partner";
 }
 
 const userMenuItems = [
@@ -65,13 +65,21 @@ const adminMenuItems = [
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 
+const partnerMenuItems = [
+  { icon: LayoutDashboard, label: "Dashboard", href: "/partner/dashboard" },
+  { icon: List, label: "My Services", href: "/partner/services" },
+  { icon: Calendar, label: "Jobs", href: "/partner/jobs" },
+  { icon: IndianRupee, label: "Earnings", href: "/partner/earnings" },
+  { icon: Settings, label: "Settings", href: "/partner/settings" },
+];
+
 const DashboardLayout = ({ children, type }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [notifications] = useState(3);
 
-  const menuItems = type === "user" ? userMenuItems : type === "host" ? hostMenuItems : adminMenuItems;
-  const dashboardTitle = type === "user" ? "User Dashboard" : type === "host" ? "Host Dashboard" : "Admin Dashboard";
+  const menuItems = type === "user" ? userMenuItems : type === "host" ? hostMenuItems : type === "partner" ? partnerMenuItems : adminMenuItems;
+  const dashboardTitle = type === "user" ? "User Dashboard" : type === "host" ? "Host Dashboard" : type === "partner" ? "Partner Dashboard" : "Admin Dashboard";
 
   const handleNotificationClick = () => {
     console.log("Notifications clicked");

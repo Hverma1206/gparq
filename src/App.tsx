@@ -121,6 +121,22 @@ import AdminFinance from "./pages/admin/Finance";
 import AdminSupport from "./pages/admin/Support";
 import AdminSettings from "./pages/admin/Settings";
 import AdminApprovals from "./pages/admin/Approvals";
+import AdminReports from "./pages/admin/Reports";
+
+// Partner Pages
+import PartnerSignup from "./pages/partner/Signup";
+import PartnerDashboard from "./pages/partner/Dashboard";
+import PartnerServices from "./pages/partner/Services";
+import PartnerEarnings from "./pages/partner/Earnings";
+import PartnerJobs from "./pages/partner/Jobs";
+
+// Additional Pages
+import BlogPost from "./pages/BlogPost";
+import HelpArticle from "./pages/HelpArticle";
+import UserSettings from "./pages/user/Settings";
+import PaymentMethods from "./pages/user/PaymentMethods";
+import Invoice from "./pages/user/Invoice";
+import EditListing from "./pages/host/EditListing";
 
 const queryClient = new QueryClient();
 
@@ -228,6 +244,9 @@ const App = () => (
           <Route path="/user/active-parking" element={<ActiveParking />} />
           <Route path="/user/support" element={<UserSupport />} />
           <Route path="/user/referral" element={<UserReferral />} />
+          <Route path="/user/settings" element={<UserSettings />} />
+          <Route path="/user/payment-methods" element={<PaymentMethods />} />
+          <Route path="/user/invoice/:id" element={<Invoice />} />
           <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
@@ -246,6 +265,7 @@ const App = () => (
           <Route path="/host/reviews" element={<HostReviews />} />
           <Route path="/host/security" element={<HostSecurity />} />
           <Route path="/host/tax" element={<TaxSummary />} />
+          <Route path="/host/listings/:id/edit" element={<EditListing />} />
           
           {/* Admin Dashboard */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -257,6 +277,18 @@ const App = () => (
           <Route path="/admin/support" element={<AdminSupport />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/approvals" element={<AdminApprovals />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          
+          {/* Partner Portal */}
+          <Route path="/partner/signup" element={<PartnerSignup />} />
+          <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+          <Route path="/partner/services" element={<PartnerServices />} />
+          <Route path="/partner/earnings" element={<PartnerEarnings />} />
+          <Route path="/partner/jobs" element={<PartnerJobs />} />
+          
+          {/* Content Pages */}
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/help/:slug" element={<HelpArticle />} />
           
           {/* System */}
           <Route path="/unauthorized" element={<Unauthorized />} />
