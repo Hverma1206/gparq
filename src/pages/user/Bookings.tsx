@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Car, MapPin, Calendar, Clock, ChevronRight, 
+  Car, MapPin, Calendar, Clock, 
   QrCode, Navigation, Phone, MoreVertical
 } from "lucide-react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 const Bookings = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -129,7 +127,9 @@ const Bookings = () => {
             </p>
           </div>
         </div>
-        <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
+        <div>
+          <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -210,65 +210,57 @@ const Bookings = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20 pb-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-              My Bookings
-            </h1>
-            <p className="text-muted-foreground">
-              View and manage all your parking bookings
-            </p>
-          </motion.div>
-
-          <Tabs defaultValue="upcoming" className="space-y-6">
-            <TabsList className="bg-secondary/50 p-1">
-              <TabsTrigger value="upcoming" className="gap-2">
-                Upcoming
-                <Badge variant="secondary" className="ml-1">{bookings.upcoming.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="active" className="gap-2">
-                Active
-                <Badge variant="secondary" className="ml-1">{bookings.active.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
-              <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="upcoming" className="space-y-4">
-              {bookings.upcoming.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="upcoming" />
-              ))}
-            </TabsContent>
-
-            <TabsContent value="active" className="space-y-4">
-              {bookings.active.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="active" />
-              ))}
-            </TabsContent>
-
-            <TabsContent value="completed" className="space-y-4">
-              {bookings.completed.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="completed" />
-              ))}
-            </TabsContent>
-
-            <TabsContent value="cancelled" className="space-y-4">
-              {bookings.cancelled.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="cancelled" />
-              ))}
-            </TabsContent>
-          </Tabs>
+    <DashboardLayout type="user">
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+            My Bookings
+          </h1>
+          <p className="text-muted-foreground">
+            View and manage all your parking bookings
+          </p>
         </div>
-      </main>
-      <Footer />
-    </div>
+
+        <Tabs defaultValue="upcoming" className="space-y-6">
+          <TabsList className="bg-secondary/50 p-1">
+            <TabsTrigger value="upcoming" className="gap-2">
+              Upcoming
+              <span className="ml-1 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">{bookings.upcoming.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="active" className="gap-2">
+              Active
+              <span className="ml-1 bg-green-500/10 text-green-500 text-xs px-2 py-0.5 rounded-full">{bookings.active.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="upcoming" className="space-y-4">
+            {bookings.upcoming.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} type="upcoming" />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="active" className="space-y-4">
+            {bookings.active.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} type="active" />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-4">
+            {bookings.completed.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} type="completed" />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="cancelled" className="space-y-4">
+            {bookings.cancelled.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} type="cancelled" />
+            ))}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
   );
 };
 

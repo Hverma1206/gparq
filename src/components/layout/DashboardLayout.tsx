@@ -45,6 +45,7 @@ const userMenuItems = [
   { icon: Car, label: "Active Parking", href: "/user/active-parking" },
   { icon: Wallet, label: "Wallet", href: "/user/wallet" },
   { icon: User, label: "Profile", href: "/user/profile" },
+  { icon: Settings, label: "Settings", href: "/user/settings" },
 ];
 
 const hostMenuItems = [
