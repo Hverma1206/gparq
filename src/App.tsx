@@ -103,6 +103,13 @@ import HostAnalytics from "./pages/host/Analytics";
 import CreateListing from "./pages/host/CreateListing";
 import HostSignup from "./pages/host/Signup";
 import HostPending from "./pages/host/Pending";
+import HostKYC from "./pages/host/KYC";
+import PropertyProof from "./pages/host/PropertyProof";
+import PayoutSettings from "./pages/host/PayoutSettings";
+import HostReviews from "./pages/host/Reviews";
+import HostSecurity from "./pages/host/Security";
+import HostPayouts from "./pages/host/Payouts";
+import TaxSummary from "./pages/host/TaxSummary";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -220,12 +227,19 @@ const App = () => (
           {/* Host Dashboard */}
           <Route path="/host/signup" element={<HostSignup />} />
           <Route path="/host/pending" element={<HostPending />} />
+          <Route path="/host/kyc" element={<HostKYC />} />
+          <Route path="/host/property-proof" element={<PropertyProof />} />
           <Route path="/host/dashboard" element={<HostDashboard />} />
           <Route path="/host/listings" element={<HostListings />} />
           <Route path="/host/listings/new" element={<CreateListing />} />
           <Route path="/host/earnings" element={<HostEarnings />} />
           <Route path="/host/bookings" element={<HostBookings />} />
           <Route path="/host/analytics" element={<HostAnalytics />} />
+          <Route path="/host/payout-settings" element={<PayoutSettings />} />
+          <Route path="/host/payouts" element={<HostPayouts />} />
+          <Route path="/host/reviews" element={<HostReviews />} />
+          <Route path="/host/security" element={<HostSecurity />} />
+          <Route path="/host/tax" element={<TaxSummary />} />
           
           {/* Admin Dashboard */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
