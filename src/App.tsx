@@ -115,6 +115,12 @@ import TaxSummary from "./pages/host/TaxSummary";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminHosts from "./pages/admin/Hosts";
+import AdminBookings from "./pages/admin/Bookings";
+import AdminDisputes from "./pages/admin/Disputes";
+import AdminFinance from "./pages/admin/Finance";
+import AdminSupport from "./pages/admin/Support";
+import AdminSettings from "./pages/admin/Settings";
+import AdminApprovals from "./pages/admin/Approvals";
 
 const queryClient = new QueryClient();
 
@@ -245,6 +251,12 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/hosts" element={<AdminHosts />} />
+          <Route path="/admin/bookings" element={<AdminBookings />} />
+          <Route path="/admin/disputes" element={<AdminDisputes />} />
+          <Route path="/admin/finance" element={<AdminFinance />} />
+          <Route path="/admin/support" element={<AdminSupport />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/approvals" element={<AdminApprovals />} />
           
           {/* System */}
           <Route path="/unauthorized" element={<Unauthorized />} />
