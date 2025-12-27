@@ -3,13 +3,30 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { 
   MapPin, Users, Building2, TrendingUp, Search, 
-  Plus, Settings, BarChart3, IndianRupee, Car, AlertCircle
+  Plus, Settings, BarChart3, IndianRupee, Car, AlertCircle,
+  Edit, Trash2, Eye, MoreVertical
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
 
@@ -23,25 +40,45 @@ interface City {
   bookings: number;
   revenue: number;
   adminAssigned: string;
+  launchDate?: string;
+  notes?: string;
 }
 
 const CityAdmin = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    state: "",
+    status: "inactive" as City["status"],
+    adminAssigned: "",
+    launchDate: "",
+    notes: "",
+  });
 
-  const cities: City[] = [
+  const [cities, setCities] = useState<City[]>([
     { id: "1", name: "Bangalore", state: "Karnataka", status: "active", hosts: 245, users: 12500, bookings: 8450, revenue: 2456000, adminAssigned: "Rahul S." },
     { id: "2", name: "Mumbai", state: "Maharashtra", status: "active", hosts: 189, users: 9800, bookings: 6200, revenue: 1890000, adminAssigned: "Priya M." },
     { id: "3", name: "Delhi NCR", state: "Delhi", status: "active", hosts: 156, users: 7600, bookings: 4800, revenue: 1450000, adminAssigned: "Amit K." },
-    { id: "4", name: "Chennai", state: "Tamil Nadu", status: "launching", hosts: 45, users: 1200, bookings: 320, revenue: 98000, adminAssigned: "Unassigned" },
-    { id: "5", name: "Hyderabad", state: "Telangana", status: "launching", hosts: 38, users: 890, bookings: 210, revenue: 67000, adminAssigned: "Neha R." },
+    { id: "4", name: "Chennai", state: "Tamil Nadu", status: "launching", hosts: 45, users: 1200, bookings: 320, revenue: 98000, adminAssigned: "Unassigned", launchDate: "Jan 15, 2026" },
+    { id: "5", name: "Hyderabad", state: "Telangana", status: "launching", hosts: 38, users: 890, bookings: 210, revenue: 67000, adminAssigned: "Neha R.", launchDate: "Feb 1, 2026" },
     { id: "6", name: "Pune", state: "Maharashtra", status: "inactive", hosts: 0, users: 0, bookings: 0, revenue: 0, adminAssigned: "Unassigned" },
-  ];
+  ]);
 
-  const filteredCities = cities.filter(city => 
-    city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    city.state.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const admins = ["Rahul S.", "Priya M.", "Amit K.", "Neha R.", "Vikram P."];
+  const states = ["Karnataka", "Maharashtra", "Delhi", "Tamil Nadu", "Telangana", "Gujarat", "Rajasthan", "West Bengal", "Kerala"];
+
+  const filteredCities = cities.filter(city => {
+    const matchesSearch = city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      city.state.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || city.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -56,8 +93,91 @@ const CityAdmin = () => {
     }
   };
 
-  const handleCityAction = (action: string, city: City) => {
-    toast.success(`${action} action for ${city.name}`);
+  const handleCreate = () => {
+    const newCity: City = {
+      id: String(cities.length + 1),
+      name: formData.name,
+      state: formData.state,
+      status: formData.status,
+      hosts: 0,
+      users: 0,
+      bookings: 0,
+      revenue: 0,
+      adminAssigned: formData.adminAssigned || "Unassigned",
+      launchDate: formData.launchDate,
+      notes: formData.notes,
+    };
+    setCities([...cities, newCity]);
+    setShowCreateDialog(false);
+    resetForm();
+    toast.success(`${formData.name} added successfully`);
+  };
+
+  const handleEdit = () => {
+    if (!selectedCity) return;
+    setCities(cities.map(c => 
+      c.id === selectedCity.id 
+        ? { 
+            ...c, 
+            name: formData.name,
+            state: formData.state,
+            status: formData.status,
+            adminAssigned: formData.adminAssigned || "Unassigned",
+            launchDate: formData.launchDate,
+            notes: formData.notes,
+          } 
+        : c
+    ));
+    setShowEditDialog(false);
+    setSelectedCity(null);
+    resetForm();
+    toast.success("City updated successfully");
+  };
+
+  const handleDelete = (city: City) => {
+    if (city.hosts > 0 || city.users > 0) {
+      toast.error("Cannot delete city with active hosts or users");
+      return;
+    }
+    setCities(cities.filter(c => c.id !== city.id));
+    toast.success(`${city.name} deleted`);
+  };
+
+  const handleToggleStatus = (city: City) => {
+    const newStatus = city.status === "active" ? "inactive" : "active";
+    setCities(cities.map(c => 
+      c.id === city.id ? { ...c, status: newStatus } : c
+    ));
+    toast.success(`${city.name} is now ${newStatus}`);
+  };
+
+  const openEditDialog = (city: City) => {
+    setSelectedCity(city);
+    setFormData({
+      name: city.name,
+      state: city.state,
+      status: city.status,
+      adminAssigned: city.adminAssigned === "Unassigned" ? "" : city.adminAssigned,
+      launchDate: city.launchDate || "",
+      notes: city.notes || "",
+    });
+    setShowEditDialog(true);
+  };
+
+  const openViewDialog = (city: City) => {
+    setSelectedCity(city);
+    setShowViewDialog(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      state: "",
+      status: "inactive",
+      adminAssigned: "",
+      launchDate: "",
+      notes: "",
+    });
   };
 
   const totalStats = {
@@ -79,7 +199,7 @@ const CityAdmin = () => {
               Manage cities, regions, and local operations
             </p>
           </div>
-          <Button className="gap-2" onClick={() => toast.info("City onboarding wizard coming soon")}>
+          <Button className="gap-2" onClick={() => setShowCreateDialog(true)}>
             <Plus className="w-4 h-4" /> Add New City
           </Button>
         </div>
@@ -125,8 +245,8 @@ const CityAdmin = () => {
         </div>
 
         {/* Search & Filter */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Search cities..." 
@@ -135,7 +255,7 @@ const CityAdmin = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Select defaultValue="all">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -157,7 +277,7 @@ const CityAdmin = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className={`bg-card border-border hover:border-primary/50 transition-colors cursor-pointer ${
+              <Card className={`bg-card border-border hover:border-primary/50 transition-colors ${
                 city.status === 'inactive' ? 'opacity-60' : ''
               }`}>
                 <CardContent className="p-6">
@@ -168,10 +288,39 @@ const CityAdmin = () => {
                         {getStatusBadge(city.status)}
                       </div>
                       <p className="text-sm text-muted-foreground">{city.state}</p>
+                      {city.launchDate && city.status === "launching" && (
+                        <p className="text-xs text-primary mt-1">Launch: {city.launchDate}</p>
+                      )}
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => handleCityAction("Settings", city)}>
-                      <Settings className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openViewDialog(city)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEditDialog(city)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit City
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggleStatus(city)}>
+                          <Settings className="h-4 w-4 mr-2" />
+                          {city.status === "active" ? "Deactivate" : "Activate"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => handleDelete(city)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete City
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 mb-4">
@@ -200,9 +349,6 @@ const CityAdmin = () => {
                         {city.adminAssigned}
                       </span>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => handleCityAction("View Details", city)}>
-                      Manage
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -219,29 +365,255 @@ const CityAdmin = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {[
-              { city: "Chennai", action: "Assign city admin", priority: "high" },
-              { city: "Pune", action: "Complete city setup", priority: "medium" },
-              { city: "Hyderabad", action: "Review host applications (12)", priority: "high" },
-              { city: "Delhi NCR", action: "Resolve compliance issue", priority: "low" },
-            ].map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+            {cities.filter(c => c.adminAssigned === "Unassigned" || c.status === "launching").map((city, index) => (
+              <div key={city.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
                 <div className="flex items-center gap-3">
-                  <Badge variant={item.priority === 'high' ? 'destructive' : item.priority === 'medium' ? 'default' : 'secondary'}>
-                    {item.priority}
+                  <Badge variant={city.adminAssigned === "Unassigned" ? "destructive" : "default"}>
+                    {city.adminAssigned === "Unassigned" ? "High" : "Medium"}
                   </Badge>
                   <div>
-                    <p className="font-medium text-foreground">{item.city}</p>
-                    <p className="text-sm text-muted-foreground">{item.action}</p>
+                    <p className="font-medium text-foreground">{city.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {city.adminAssigned === "Unassigned" ? "Assign city admin" : `Launch on ${city.launchDate}`}
+                    </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => toast.info(`Taking action for ${item.city}`)}>
+                <Button variant="outline" size="sm" onClick={() => openEditDialog(city)}>
                   Take Action
                 </Button>
               </div>
             ))}
           </CardContent>
         </Card>
+
+        {/* Create Dialog */}
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add New City</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>City Name</Label>
+                  <Input 
+                    value={formData.name} 
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="Enter city name"
+                  />
+                </div>
+                <div>
+                  <Label>State</Label>
+                  <Select value={formData.state} onValueChange={(v) => setFormData({...formData, state: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {states.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v as City["status"]})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="launching">Launching</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Assign Admin</Label>
+                  <Select value={formData.adminAssigned} onValueChange={(v) => setFormData({...formData, adminAssigned: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select admin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {admins.map(admin => (
+                        <SelectItem key={admin} value={admin}>{admin}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {formData.status === "launching" && (
+                <div>
+                  <Label>Launch Date</Label>
+                  <Input 
+                    type="date"
+                    value={formData.launchDate} 
+                    onChange={(e) => setFormData({...formData, launchDate: e.target.value})}
+                  />
+                </div>
+              )}
+              <div>
+                <Label>Notes (Optional)</Label>
+                <Textarea 
+                  value={formData.notes} 
+                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  placeholder="Any additional notes..."
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+              <Button onClick={handleCreate} disabled={!formData.name || !formData.state}>Add City</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit City - {selectedCity?.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>City Name</Label>
+                  <Input 
+                    value={formData.name} 
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>State</Label>
+                  <Select value={formData.state} onValueChange={(v) => setFormData({...formData, state: v})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {states.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v as City["status"]})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="launching">Launching</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Assign Admin</Label>
+                  <Select value={formData.adminAssigned} onValueChange={(v) => setFormData({...formData, adminAssigned: v})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select admin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {admins.map(admin => (
+                        <SelectItem key={admin} value={admin}>{admin}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {formData.status === "launching" && (
+                <div>
+                  <Label>Launch Date</Label>
+                  <Input 
+                    type="date"
+                    value={formData.launchDate} 
+                    onChange={(e) => setFormData({...formData, launchDate: e.target.value})}
+                  />
+                </div>
+              )}
+              <div>
+                <Label>Notes</Label>
+                <Textarea 
+                  value={formData.notes} 
+                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+              <Button onClick={handleEdit}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>City Details - {selectedCity?.name}</DialogTitle>
+            </DialogHeader>
+            {selectedCity && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(selectedCity.status)}
+                  <span className="text-muted-foreground">{selectedCity.state}</span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground">Total Hosts</p>
+                    <p className="font-display text-xl font-bold">{selectedCity.hosts}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground">Total Users</p>
+                    <p className="font-display text-xl font-bold">{selectedCity.users.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground">Bookings</p>
+                    <p className="font-display text-xl font-bold">{selectedCity.bookings.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground">Revenue</p>
+                    <p className="font-display text-xl font-bold">₹{(selectedCity.revenue / 100000).toFixed(2)}L</p>
+                  </div>
+                </div>
+                
+                <div className="p-3 rounded-lg bg-secondary/30">
+                  <p className="text-xs text-muted-foreground">City Admin</p>
+                  <p className={`font-medium ${selectedCity.adminAssigned === "Unassigned" ? "text-yellow-500" : ""}`}>
+                    {selectedCity.adminAssigned}
+                  </p>
+                </div>
+
+                {selectedCity.launchDate && (
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground">Launch Date</p>
+                    <p className="font-medium">{selectedCity.launchDate}</p>
+                  </div>
+                )}
+
+                {selectedCity.notes && (
+                  <div className="p-3 rounded-lg bg-secondary/30">
+                    <p className="text-xs text-muted-foreground">Notes</p>
+                    <p className="text-sm">{selectedCity.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowViewDialog(false)}>Close</Button>
+              <Button onClick={() => { setShowViewDialog(false); openEditDialog(selectedCity!); }}>
+                Edit City
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

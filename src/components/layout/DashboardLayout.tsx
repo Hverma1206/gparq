@@ -76,10 +76,10 @@ const adminMenuItems = [
   { icon: Star, label: "Reviews", href: "/admin/reviews" },
   { icon: Gift, label: "Coupons", href: "/admin/coupons" },
   { icon: AlertTriangle, label: "Fraud", href: "/admin/fraud" },
+  { icon: Shield, label: "Disputes", href: "/admin/disputes" },
   { icon: MapPinned, label: "Cities", href: "/admin/cities" },
   { icon: Key, label: "Roles", href: "/admin/roles" },
   { icon: Flag, label: "Features", href: "/admin/features" },
-  { icon: Shield, label: "Disputes", href: "/admin/disputes" },
   { icon: FileText, label: "Reports", href: "/admin/reports" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
