@@ -29,7 +29,8 @@ import {
   MapPin, Bell, Settings, LogOut, User, 
   Home, Search, Calendar, Wallet, Car,
   LayoutDashboard, List, IndianRupee, BarChart3, Plus,
-  Users, Building2, FileText, Shield, Menu, Flag, MapPinned, Key
+  Users, Building2, FileText, Shield, Menu, Flag, MapPinned, Key,
+  AlertTriangle, Truck, TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -45,6 +46,8 @@ const userMenuItems = [
   { icon: Car, label: "Vehicles", href: "/user/vehicles" },
   { icon: Wallet, label: "Wallet", href: "/user/wallet" },
   { icon: Users, label: "Family", href: "/user/family" },
+  { icon: Truck, label: "Fleet", href: "/user/fleet" },
+  { icon: AlertTriangle, label: "Safety", href: "/user/safety" },
   { icon: User, label: "Profile", href: "/user/profile" },
   { icon: Settings, label: "Settings", href: "/user/settings" },
 ];
@@ -55,6 +58,7 @@ const hostMenuItems = [
   { icon: Plus, label: "Add Listing", href: "/host/listings/new" },
   { icon: Calendar, label: "Bookings", href: "/host/bookings" },
   { icon: IndianRupee, label: "Earnings", href: "/host/earnings" },
+  { icon: TrendingUp, label: "Pricing", href: "/host/pricing" },
   { icon: BarChart3, label: "Analytics", href: "/host/analytics" },
   { icon: Settings, label: "Settings", href: "/host/settings" },
 ];
