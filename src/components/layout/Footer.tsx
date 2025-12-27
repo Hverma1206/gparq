@@ -1,37 +1,45 @@
+import { Link } from "react-router-dom";
 import { MapPin, Twitter, Linkedin, Instagram, Mail } from "lucide-react";
 
 const Footer = () => {
   const footerLinks = {
     product: [
-      { label: "Find Parking", href: "#" },
-      { label: "List Your Space", href: "#" },
-      { label: "EV Charging", href: "#" },
-      { label: "For Fleet", href: "#" },
-      { label: "Pricing", href: "#pricing" },
+      { label: "Find Parking", href: "/search" },
+      { label: "List Your Space", href: "/list-your-space" },
+      { label: "EV Charging", href: "/ev-charging" },
+      { label: "For Fleet", href: "/corporate" },
+      { label: "Pricing", href: "/pricing" },
     ],
     company: [
-      { label: "About Us", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Contact", href: "#" },
+      { label: "About Us", href: "/about" },
+      { label: "Team", href: "/team" },
+      { label: "Press", href: "/press" },
+      { label: "Blog", href: "/blog" },
+      { label: "Contact", href: "/contact" },
     ],
     resources: [
-      { label: "Help Center", href: "#" },
-      { label: "Safety", href: "#" },
-      { label: "Trust & Security", href: "#" },
-      { label: "Partner Program", href: "#" },
-      { label: "City Guides", href: "#" },
+      { label: "Help Center", href: "/help" },
+      { label: "FAQs", href: "/faqs" },
+      { label: "Trust & Safety", href: "/trust-safety" },
+      { label: "Become a Partner", href: "/become-partner" },
+      { label: "Partner Dashboard", href: "/partner/dashboard" },
     ],
     legal: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
-      { label: "Accessibility", href: "#" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Cookie Policy", href: "/cookie-policy" },
+      { label: "Accessibility", href: "/accessibility" },
     ],
   };
 
-  const cities = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune"];
+  const cities = [
+    { name: "Mumbai", href: "/city/mumbai" },
+    { name: "Delhi", href: "/city/delhi" },
+    { name: "Bangalore", href: "/city/bangalore" },
+    { name: "Hyderabad", href: "/city/hyderabad" },
+    { name: "Chennai", href: "/city/chennai" },
+    { name: "Pune", href: "/city/pune" },
+  ];
 
   return (
     <footer className="bg-card border-t border-border">
@@ -89,12 +97,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -106,12 +114,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -123,12 +131,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -140,12 +148,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -157,13 +165,13 @@ const Footer = () => {
           <h4 className="font-display font-semibold text-foreground mb-4">Popular Cities</h4>
           <div className="flex flex-wrap gap-3">
             {cities.map((city) => (
-              <a
-                key={city}
-                href="#"
+              <Link
+                key={city.name}
+                to={city.href}
                 className="px-4 py-2 text-sm bg-secondary rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
-                {city}
-              </a>
+                {city.name}
+              </Link>
             ))}
           </div>
         </div>
