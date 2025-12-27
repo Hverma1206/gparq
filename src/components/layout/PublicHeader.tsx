@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
-const Header = () => {
+const PublicHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -174,4 +174,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default PublicHeader;
