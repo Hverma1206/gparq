@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Parq Brand Colors - Premium Urban Parking */
+    --background: 220 25% 3%;
+    --foreground: 210 20% 98%;
+
+    --card: 220 20% 6%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 220 20% 6%;
+    --popover-foreground: 210 20% 98%;
+
+    /* Deep Navy Primary */
+    --primary: 168 100% 42%;
+    --primary-foreground: 220 25% 3%;
+
+    /* Teal/Urban Green Secondary */
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 168 85% 35%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 15% 15%;
+    --input: 220 15% 12%;
+    --ring: 168 100% 42%;
+
+    --radius: 0.75rem;
+
+    /* Custom Parq tokens */
+    --teal: 168 100% 42%;
+    --teal-glow: 168 100% 50%;
+    --navy: 220 25% 8%;
+    --navy-deep: 220 25% 3%;
+    --surface-elevated: 220 18% 10%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(168 100% 42%) 0%, hsl(180 70% 35%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(220 25% 3%) 0%, hsl(220 20% 8%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 18% 10%) 0%, hsl(220 20% 6%) 100%);
+    --gradient-glow: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(168 100% 42% / 0.06), transparent 40%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 60px hsl(168 100% 42% / 0.15);
+    --shadow-card: 0 4px 24px hsl(220 25% 3% / 0.5);
+    --shadow-button: 0 4px 20px hsl(168 100% 42% / 0.25);
+
+    /* Typography */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+
+    /* Sidebar */
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 168 100% 42%;
+    --sidebar-primary-foreground: 220 25% 3%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 168 100% 42%;
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 220 25% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 8%;
+
+    --primary: 168 100% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 220 25% 8%;
+
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 168 80% 92%;
+    --accent-foreground: 168 100% 25%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 168 100% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .glow-teal {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-button {
+    box-shadow: var(--shadow-button);
+  }
+
+  .glass {
+    @apply backdrop-blur-xl bg-secondary/50 border border-border/50;
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-2xl bg-card/80 border border-border;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Mapbox Custom Styles */
+.mapboxgl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.mapboxgl-popup-tip {
+  display: none !important;
+}
+
+.mapboxgl-popup {
+  z-index: 10 !important;
+}
+
+.mapboxgl-ctrl-group {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+}
+
+.mapboxgl-ctrl-group button {
+  background: transparent !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+.mapboxgl-ctrl-group button:last-child {
+  border-bottom: none !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background: hsl(var(--secondary)) !important;
+}
+
+.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  filter: invert(1);
+}
+
+.mapboxgl-ctrl-geolocate {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.75rem !important;
+}
+
+.mapboxgl-user-location-dot {
+  background-color: hsl(var(--primary)) !important;
+}
+
+.mapboxgl-user-location-accuracy-circle {
+  background-color: hsl(var(--primary) / 0.2) !important;
+}
