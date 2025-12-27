@@ -110,6 +110,7 @@ import HostReviews from "./pages/host/Reviews";
 import HostSecurity from "./pages/host/Security";
 import HostPayouts from "./pages/host/Payouts";
 import TaxSummary from "./pages/host/TaxSummary";
+import HostSettings from "./pages/host/Settings";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -270,6 +271,7 @@ const App = () => (
           <Route path="/host/reviews" element={<HostReviews />} />
           <Route path="/host/security" element={<HostSecurity />} />
           <Route path="/host/tax" element={<TaxSummary />} />
+          <Route path="/host/settings" element={<HostSettings />} />
           <Route path="/host/listings/:id/edit" element={<EditListing />} />
           
           {/* Admin Dashboard */}
