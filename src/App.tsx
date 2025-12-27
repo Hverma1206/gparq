@@ -125,10 +125,15 @@ import AdminReports from "./pages/admin/Reports";
 
 // Partner Pages
 import PartnerSignup from "./pages/partner/Signup";
+import PartnerLogin from "./pages/partner/Login";
 import PartnerDashboard from "./pages/partner/Dashboard";
 import PartnerServices from "./pages/partner/Services";
 import PartnerEarnings from "./pages/partner/Earnings";
 import PartnerJobs from "./pages/partner/Jobs";
+import PartnerSettings from "./pages/partner/Settings";
+import PartnerProfile from "./pages/partner/Profile";
+import PartnerReviews from "./pages/partner/Reviews";
+import PartnerAnalytics from "./pages/partner/Analytics";
 
 // Additional Pages
 import BlogPost from "./pages/BlogPost";
@@ -281,10 +286,15 @@ const App = () => (
           
           {/* Partner Portal */}
           <Route path="/partner/signup" element={<PartnerSignup />} />
+          <Route path="/partner/login" element={<PartnerLogin />} />
           <Route path="/partner/dashboard" element={<PartnerDashboard />} />
           <Route path="/partner/services" element={<PartnerServices />} />
           <Route path="/partner/earnings" element={<PartnerEarnings />} />
           <Route path="/partner/jobs" element={<PartnerJobs />} />
+          <Route path="/partner/settings" element={<PartnerSettings />} />
+          <Route path="/partner/profile" element={<PartnerProfile />} />
+          <Route path="/partner/reviews" element={<PartnerReviews />} />
+          <Route path="/partner/analytics" element={<PartnerAnalytics />} />
           
           {/* Content Pages */}
           <Route path="/blog/:slug" element={<BlogPost />} />
