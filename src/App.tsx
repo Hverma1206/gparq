@@ -84,6 +84,15 @@ import BookingSuccess from "./pages/user/BookingSuccess";
 import BookingFailed from "./pages/user/BookingFailed";
 import ActiveParking from "./pages/user/ActiveParking";
 import BookingFlow from "./pages/user/BookingFlow";
+import UserMapView from "./pages/user/MapView";
+import SavedLocations from "./pages/user/SavedLocations";
+import RecentLocations from "./pages/user/RecentLocations";
+import AddMoney from "./pages/user/AddMoney";
+import Transactions from "./pages/user/Transactions";
+import UserVehicles from "./pages/user/Vehicles";
+import UserNotifications from "./pages/user/Notifications";
+import UserSupport from "./pages/user/Support";
+import UserReferral from "./pages/user/Referral";
 
 // Host Pages
 import HostDashboard from "./pages/host/Dashboard";
@@ -185,14 +194,27 @@ const App = () => (
           {/* User Dashboard */}
           <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/user/search" element={<SearchResults />} />
+          <Route path="/user/map" element={<UserMapView />} />
+          <Route path="/user/saved" element={<SavedLocations />} />
+          <Route path="/user/recent" element={<RecentLocations />} />
           <Route path="/parking/:id" element={<ParkingDetail />} />
           <Route path="/user/bookings" element={<Bookings />} />
+          <Route path="/user/bookings/upcoming" element={<Bookings />} />
+          <Route path="/user/bookings/active" element={<Bookings />} />
+          <Route path="/user/bookings/completed" element={<Bookings />} />
           <Route path="/user/wallet" element={<Wallet />} />
+          <Route path="/user/wallet/add" element={<AddMoney />} />
+          <Route path="/user/transactions" element={<Transactions />} />
           <Route path="/user/profile" element={<Profile />} />
+          <Route path="/user/vehicles" element={<UserVehicles />} />
+          <Route path="/user/notifications" element={<UserNotifications />} />
           <Route path="/user/booking-summary" element={<BookingSummary />} />
           <Route path="/user/booking-success" element={<BookingSuccess />} />
           <Route path="/user/booking-failed" element={<BookingFailed />} />
           <Route path="/user/active-parking" element={<ActiveParking />} />
+          <Route path="/user/support" element={<UserSupport />} />
+          <Route path="/user/referral" element={<UserReferral />} />
           <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
