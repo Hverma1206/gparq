@@ -85,41 +85,90 @@ const PartnerDashboard = () => {
           </Button>
         </div>
 
-        {/* Recent Jobs */}
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="font-display text-xl">Recent Jobs</CardTitle>
-            <Link to="/partner/jobs" className="text-primary text-sm hover:underline flex items-center gap-1">
-              View All <ChevronRight className="h-4 w-4" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentJobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Wrench className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-foreground">{job.service}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {job.vehicle} • {job.customer}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Recent Jobs */}
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display text-xl">Recent Jobs</CardTitle>
+              <Link to="/partner/jobs" className="text-primary text-sm hover:underline flex items-center gap-1">
+                View All <ChevronRight className="h-4 w-4" />
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <Wrench className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground">{job.service}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {job.vehicle} • {job.customer}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <div className="font-medium text-foreground">{job.amount}</div>
+                      {getStatusBadge(job.status)}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium text-foreground">{job.amount}</div>
-                    {getStatusBadge(job.status)}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Reviews */}
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display text-xl">Recent Reviews</CardTitle>
+              <Link to="/partner/reviews" className="text-primary text-sm hover:underline flex items-center gap-1">
+                View All <ChevronRight className="h-4 w-4" />
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { id: 1, customer: "Rahul S.", rating: 5, comment: "Excellent car wash service! Very thorough and professional.", service: "Premium Car Wash", date: "2 days ago" },
+                  { id: 2, customer: "Priya M.", rating: 4, comment: "Good EV charging experience. Fast and convenient.", service: "EV Charging", date: "3 days ago" },
+                  { id: 3, customer: "Amit K.", rating: 5, comment: "Interior looks brand new! Great attention to detail.", service: "Interior Cleaning", date: "5 days ago" },
+                  { id: 4, customer: "Sneha R.", rating: 4, comment: "Quick and efficient basic wash. Good value.", service: "Basic Wash", date: "1 week ago" },
+                ].map((review) => (
+                  <div
+                    key={review.id}
+                    className="p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">{review.customer.charAt(0)}</span>
+                        </div>
+                        <span className="font-medium text-foreground">{review.customer}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{review.comment}</p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{review.service}</span>
+                      <span>{review.date}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );
