@@ -30,7 +30,7 @@ import {
   Home, Search, Calendar, Wallet, Car,
   LayoutDashboard, List, IndianRupee, BarChart3, Plus,
   Users, Building2, FileText, Shield, Menu, Flag, MapPinned, Key,
-  AlertTriangle, Truck, TrendingUp
+  AlertTriangle, Truck, TrendingUp, Zap, Sparkles, Star, Gift
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,10 +44,11 @@ const userMenuItems = [
   { icon: Search, label: "Find Parking", href: "/search" },
   { icon: Calendar, label: "My Bookings", href: "/user/bookings" },
   { icon: Car, label: "Vehicles", href: "/user/vehicles" },
+  { icon: Zap, label: "EV Charging", href: "/user/ev-charging" },
+  { icon: Sparkles, label: "Services", href: "/user/services" },
   { icon: Wallet, label: "Wallet", href: "/user/wallet" },
-  { icon: Users, label: "Family", href: "/user/family" },
-  { icon: Truck, label: "Fleet", href: "/user/fleet" },
-  { icon: AlertTriangle, label: "Safety", href: "/user/safety" },
+  { icon: Star, label: "Reviews", href: "/user/reviews" },
+  { icon: Gift, label: "Referrals", href: "/user/referrals" },
   { icon: User, label: "Profile", href: "/user/profile" },
   { icon: Settings, label: "Settings", href: "/user/settings" },
 ];
@@ -69,6 +70,8 @@ const adminMenuItems = [
   { icon: Building2, label: "Hosts", href: "/admin/hosts" },
   { icon: Calendar, label: "Bookings", href: "/admin/bookings" },
   { icon: IndianRupee, label: "Finance", href: "/admin/finance" },
+  { icon: BarChart3, label: "Analytics", href: "/admin/analytics" },
+  { icon: AlertTriangle, label: "Fraud", href: "/admin/fraud" },
   { icon: MapPinned, label: "Cities", href: "/admin/cities" },
   { icon: Key, label: "Roles", href: "/admin/roles" },
   { icon: Flag, label: "Features", href: "/admin/features" },
