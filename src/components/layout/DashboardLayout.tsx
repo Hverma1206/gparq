@@ -70,6 +70,8 @@ const partnerMenuItems = [
   { icon: List, label: "My Services", href: "/partner/services" },
   { icon: Calendar, label: "Jobs", href: "/partner/jobs" },
   { icon: IndianRupee, label: "Earnings", href: "/partner/earnings" },
+  { icon: BarChart3, label: "Analytics", href: "/partner/analytics" },
+  { icon: User, label: "Profile", href: "/partner/profile" },
   { icon: Settings, label: "Settings", href: "/partner/settings" },
 ];
 
