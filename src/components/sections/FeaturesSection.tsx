@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
-import { Shield, Zap, Camera, Clock, Smartphone, CreditCard, MapPin, Star } from "lucide-react";
+import { Shield, Zap, Camera, Clock, Smartphone, CreditCard, MapPin, Star, Droplets, Key, Gift, Users, BarChart3, Globe, Bell, AlertTriangle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const FeaturesSection = () => {
-  const features = [
+  const coreFeatures = [
     {
       icon: Shield,
       title: "Verified & Secure",
@@ -11,22 +13,57 @@ const FeaturesSection = () => {
     {
       icon: Zap,
       title: "EV Charging",
-      description: "Find spots with charging stations. Filter by charger type and availability.",
+      description: "Reserve charging stations with real-time availability and multiple charger types.",
+      link: "/user/ev-charging",
     },
     {
-      icon: Camera,
-      title: "CCTV Monitored",
-      description: "24/7 camera surveillance at partner locations for complete peace of mind.",
+      icon: Droplets,
+      title: "Car Wash & Valet",
+      description: "Add premium services like car wash, valet parking, and interior cleaning.",
+      link: "/user/services",
     },
     {
       icon: Clock,
       title: "Flexible Duration",
       description: "Book by hour, day, or month. Extend or cancel with just a few taps.",
     },
+  ];
+
+  const additionalFeatures = [
     {
-      icon: Smartphone,
-      title: "Digital Access",
-      description: "QR code or OTP entry. No physical tickets, no waiting in queues.",
+      icon: Star,
+      title: "Reviews & Ratings",
+      description: "Rate your experience and help others find the best spots.",
+      link: "/user/reviews",
+    },
+    {
+      icon: Gift,
+      title: "Referral Rewards",
+      description: "Invite friends and earn ₹300 for each successful referral.",
+      link: "/user/referrals",
+    },
+    {
+      icon: Users,
+      title: "Family Accounts",
+      description: "Share parking benefits with family members and manage together.",
+      link: "/user/family",
+    },
+    {
+      icon: AlertTriangle,
+      title: "Safety Features",
+      description: "Emergency contacts, incident reporting, and SOS alerts.",
+      link: "/user/safety",
+    },
+    {
+      icon: Bell,
+      title: "Smart Notifications",
+      description: "Booking reminders, payment alerts, and personalized offers.",
+      link: "/user/notification-settings",
+    },
+    {
+      icon: Globe,
+      title: "Multi-language",
+      description: "Available in English, Hindi, Kannada, Tamil, Telugu, and Marathi.",
     },
     {
       icon: CreditCard,
@@ -37,11 +74,6 @@ const FeaturesSection = () => {
       icon: MapPin,
       title: "Real-time Availability",
       description: "See live spot availability. Never drive to a full parking lot again.",
-    },
-    {
-      icon: Star,
-      title: "Rated Spaces",
-      description: "User reviews and ratings help you choose the best parking spots.",
     },
   ];
 
@@ -88,15 +120,44 @@ const FeaturesSection = () => {
           </motion.p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
+        {/* Core Features - Highlighted */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {coreFeatures.map((feature, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="group p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <feature.icon className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                {feature.description}
+              </p>
+              {feature.link && (
+                <Link to={feature.link} className="text-sm text-primary font-medium hover:underline">
+                  Learn more →
+                </Link>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Additional Features Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {additionalFeatures.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
               className="group p-6 rounded-2xl bg-background border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
@@ -108,9 +169,29 @@ const FeaturesSection = () => {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {feature.description}
               </p>
+              {feature.link && (
+                <Link to={feature.link} className="text-sm text-primary font-medium hover:underline mt-2 inline-block">
+                  Explore →
+                </Link>
+              )}
             </motion.div>
           ))}
         </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="text-center mt-16"
+        >
+          <Link to="/features">
+            <Button variant="outline" size="lg">
+              View All Features
+            </Button>
+          </Link>
+        </motion.div>
       </div>
     </section>
   );
