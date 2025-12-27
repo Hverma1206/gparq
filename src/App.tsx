@@ -83,6 +83,7 @@ import BookingSummary from "./pages/user/BookingSummary";
 import BookingSuccess from "./pages/user/BookingSuccess";
 import BookingFailed from "./pages/user/BookingFailed";
 import ActiveParking from "./pages/user/ActiveParking";
+import BookingFlow from "./pages/user/BookingFlow";
 
 // Host Pages
 import HostDashboard from "./pages/host/Dashboard";
@@ -190,6 +191,7 @@ const App = () => (
           <Route path="/user/booking-success" element={<BookingSuccess />} />
           <Route path="/user/booking-failed" element={<BookingFailed />} />
           <Route path="/user/active-parking" element={<ActiveParking />} />
+          <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
           <Route path="/host/dashboard" element={<HostDashboard />} />

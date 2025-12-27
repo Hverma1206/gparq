@@ -274,7 +274,7 @@ const ParkingDetail = () => {
                     </div>
                   </div>
 
-                  <Link to="/user/booking-summary">
+                  <Link to={`/booking/${parking.id}`}>
                     <Button className="w-full" size="lg">
                       Book Now
                     </Button>
