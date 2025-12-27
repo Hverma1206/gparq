@@ -26,19 +26,19 @@ const Header = () => {
     },
     { label: "Features", href: "/features" },
     { 
+      label: "Services", 
+      href: "/services",
+      subLinks: [
+        { label: "EV Charging", href: "/ev-charging" },
+        { label: "Car Wash & Valet", href: "/services" },
+      ]
+    },
+    { 
       label: "Pricing", 
       href: "/pricing",
       subLinks: [
         { label: "For Users", href: "/pricing/users" },
         { label: "For Hosts", href: "/pricing/hosts" },
-      ]
-    },
-    { 
-      label: "Partner", 
-      href: "/become-partner",
-      subLinks: [
-        { label: "Become a Partner", href: "/become-partner" },
-        { label: "Partner Login", href: "/partner/dashboard" },
       ]
     },
     { label: "For Hosts", href: "/list-your-space" },
