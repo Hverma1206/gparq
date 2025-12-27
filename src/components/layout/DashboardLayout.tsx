@@ -55,14 +55,16 @@ const hostMenuItems = [
   { icon: Calendar, label: "Bookings", href: "/host/bookings" },
   { icon: IndianRupee, label: "Earnings", href: "/host/earnings" },
   { icon: BarChart3, label: "Analytics", href: "/host/analytics" },
+  { icon: Settings, label: "Settings", href: "/host/settings" },
 ];
 
 const adminMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
   { icon: Users, label: "Users", href: "/admin/users" },
   { icon: Building2, label: "Hosts", href: "/admin/hosts" },
+  { icon: Calendar, label: "Bookings", href: "/admin/bookings" },
   { icon: FileText, label: "Reports", href: "/admin/reports" },
-  { icon: Shield, label: "Security", href: "/admin/security" },
+  { icon: Shield, label: "Disputes", href: "/admin/disputes" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 

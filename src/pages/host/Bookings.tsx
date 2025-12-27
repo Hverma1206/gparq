@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, Car, Calendar, Check, X, Clock, 
-  Phone, MapPin, MoreVertical
+  Phone, MapPin
 } from "lucide-react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { toast } from "sonner";
 
 const HostBookings = () => {
   const bookings = {
@@ -29,6 +27,10 @@ const HostBookings = () => {
     ],
   };
 
+  const handleApprove = (id: number) => toast.success(`Booking ${id} approved`);
+  const handleReject = (id: number) => toast.error(`Booking ${id} rejected`);
+  const handleContact = () => toast.info("Contacting user...");
+
   const BookingCard = ({ booking, type }: { booking: any; type: string }) => (
     <div className="bg-secondary/50 rounded-xl p-4">
       <div className="flex items-start justify-between mb-4">
@@ -46,10 +48,10 @@ const HostBookings = () => {
         </div>
         {type === "requests" && (
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+            <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleReject(booking.id)}>
               <X className="h-4 w-4" />
             </Button>
-            <Button size="sm">
+            <Button size="sm" onClick={() => handleApprove(booking.id)}>
               <Check className="h-4 w-4" />
             </Button>
           </div>
@@ -82,7 +84,7 @@ const HostBookings = () => {
             <span className="text-muted-foreground">Entry: </span>
             <span className="font-medium text-green-500">{booking.entryTime}</span>
           </div>
-          <Button size="sm" variant="outline" className="gap-1">
+          <Button size="sm" variant="outline" className="gap-1" onClick={handleContact}>
             <Phone className="h-3 w-3" />
             Contact
           </Button>
@@ -92,78 +94,70 @@ const HostBookings = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-20 pb-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-              Booking Management
-            </h1>
-            <p className="text-muted-foreground">
-              Manage booking requests and track active parkings
-            </p>
-          </motion.div>
-
-          <Tabs defaultValue="requests">
-            <TabsList className="mb-6">
-              <TabsTrigger value="requests" className="gap-2">
-                Requests
-                <Badge variant="secondary">{bookings.requests.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="active" className="gap-2">
-                Active
-                <Badge variant="secondary">{bookings.active.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="requests">
-              <div className="grid md:grid-cols-2 gap-4">
-                {bookings.requests.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} type="requests" />
-                ))}
-              </div>
-              {bookings.requests.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                  No pending booking requests
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="active">
-              <div className="grid md:grid-cols-2 gap-4">
-                {bookings.active.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} type="active" />
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="upcoming">
-              <div className="grid md:grid-cols-2 gap-4">
-                {bookings.upcoming.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} type="upcoming" />
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="completed">
-              <div className="grid md:grid-cols-2 gap-4">
-                {bookings.completed.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} type="completed" />
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+    <DashboardLayout type="host">
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+            Booking Management
+          </h1>
+          <p className="text-muted-foreground">
+            Manage booking requests and track active parkings
+          </p>
         </div>
-      </main>
-      <Footer />
-    </div>
+
+        <Tabs defaultValue="requests">
+          <TabsList className="mb-6">
+            <TabsTrigger value="requests" className="gap-2">
+              Requests
+              <span className="ml-1 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">{bookings.requests.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="active" className="gap-2">
+              Active
+              <span className="ml-1 bg-green-500/10 text-green-500 text-xs px-2 py-0.5 rounded-full">{bookings.active.length}</span>
+            </TabsTrigger>
+            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="requests">
+            <div className="grid md:grid-cols-2 gap-4">
+              {bookings.requests.map((booking) => (
+                <BookingCard key={booking.id} booking={booking} type="requests" />
+              ))}
+            </div>
+            {bookings.requests.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                No pending booking requests
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="active">
+            <div className="grid md:grid-cols-2 gap-4">
+              {bookings.active.map((booking) => (
+                <BookingCard key={booking.id} booking={booking} type="active" />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="upcoming">
+            <div className="grid md:grid-cols-2 gap-4">
+              {bookings.upcoming.map((booking) => (
+                <BookingCard key={booking.id} booking={booking} type="upcoming" />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="completed">
+            <div className="grid md:grid-cols-2 gap-4">
+              {bookings.completed.map((booking) => (
+                <BookingCard key={booking.id} booking={booking} type="completed" />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
   );
 };
 
