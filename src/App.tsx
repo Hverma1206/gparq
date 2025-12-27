@@ -92,6 +92,8 @@ import HostEarnings from "./pages/host/Earnings";
 import HostBookings from "./pages/host/Bookings";
 import HostAnalytics from "./pages/host/Analytics";
 import CreateListing from "./pages/host/CreateListing";
+import HostSignup from "./pages/host/Signup";
+import HostPending from "./pages/host/Pending";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -194,6 +196,8 @@ const App = () => (
           <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
+          <Route path="/host/signup" element={<HostSignup />} />
+          <Route path="/host/pending" element={<HostPending />} />
           <Route path="/host/dashboard" element={<HostDashboard />} />
           <Route path="/host/listings" element={<HostListings />} />
           <Route path="/host/listings/new" element={<CreateListing />} />
