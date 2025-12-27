@@ -97,6 +97,8 @@ import VehicleDocuments from "./pages/user/VehicleDocuments";
 import FamilyAccounts from "./pages/user/FamilyAccounts";
 import BlockedUsers from "./pages/user/BlockedUsers";
 import GuestVehicle from "./pages/user/GuestVehicle";
+import SafetyPage from "./pages/user/Safety";
+import FleetManagement from "./pages/user/FleetManagement";
 
 // Host Pages
 import HostDashboard from "./pages/host/Dashboard";
@@ -115,6 +117,7 @@ import HostSecurity from "./pages/host/Security";
 import HostPayouts from "./pages/host/Payouts";
 import TaxSummary from "./pages/host/TaxSummary";
 import HostSettings from "./pages/host/Settings";
+import DynamicPricing from "./pages/host/DynamicPricing";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -264,6 +267,8 @@ const App = () => (
           <Route path="/user/family" element={<FamilyAccounts />} />
           <Route path="/user/blocked" element={<BlockedUsers />} />
           <Route path="/user/guest-vehicle" element={<GuestVehicle />} />
+          <Route path="/user/safety" element={<SafetyPage />} />
+          <Route path="/user/fleet" element={<FleetManagement />} />
           <Route path="/booking/:id" element={<BookingFlow />} />
           
           {/* Host Dashboard */}
@@ -283,6 +288,7 @@ const App = () => (
           <Route path="/host/security" element={<HostSecurity />} />
           <Route path="/host/tax" element={<TaxSummary />} />
           <Route path="/host/settings" element={<HostSettings />} />
+          <Route path="/host/pricing" element={<DynamicPricing />} />
           <Route path="/host/listings/:id/edit" element={<EditListing />} />
           
           {/* Admin Dashboard */}
