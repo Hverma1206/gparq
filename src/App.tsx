@@ -140,6 +140,13 @@ import RolesPermissions from "./pages/admin/RolesPermissions";
 import FeatureToggles from "./pages/admin/FeatureToggles";
 import FraudDetection from "./pages/admin/FraudDetection";
 import AdminAnalytics from "./pages/admin/Analytics";
+import AdminPartners from "./pages/admin/Partners";
+import AdminVehicles from "./pages/admin/Vehicles";
+import AdminReviews from "./pages/admin/Reviews";
+import AdminCoupons from "./pages/admin/Coupons";
+import AdminNotifications from "./pages/admin/Notifications";
+import AdminAuditLogs from "./pages/admin/AuditLogs";
+import AdminProfile from "./pages/admin/Profile";
 
 // Partner Pages
 import PartnerSignup from "./pages/partner/Signup";
@@ -307,6 +314,8 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/hosts" element={<AdminHosts />} />
+          <Route path="/admin/partners" element={<AdminPartners />} />
+          <Route path="/admin/vehicles" element={<AdminVehicles />} />
           <Route path="/admin/bookings" element={<AdminBookings />} />
           <Route path="/admin/disputes" element={<AdminDisputes />} />
           <Route path="/admin/finance" element={<AdminFinance />} />
@@ -319,6 +328,11 @@ const App = () => (
           <Route path="/admin/features" element={<FeatureToggles />} />
           <Route path="/admin/fraud" element={<FraudDetection />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
+          <Route path="/admin/reviews" element={<AdminReviews />} />
+          <Route path="/admin/coupons" element={<AdminCoupons />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
+          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+          <Route path="/admin/profile" element={<AdminProfile />} />
           
           {/* Partner Portal */}
           <Route path="/partner/signup" element={<PartnerSignup />} />
