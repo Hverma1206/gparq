@@ -1,8 +1,9 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Users, MapPin, IndianRupee, Calendar, TrendingUp,
-  Eye, CheckCircle, XCircle
+  Eye, CheckCircle, XCircle, AlertTriangle, BarChart3, Shield
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
@@ -13,6 +14,12 @@ const AdminDashboard = () => {
     { label: "Active Hosts", value: "1,250", change: "+8%", icon: MapPin },
     { label: "Revenue (MTD)", value: "₹12.5L", change: "+15%", icon: IndianRupee },
     { label: "Bookings Today", value: "1,842", change: "+22%", icon: Calendar },
+  ];
+
+  const quickLinks = [
+    { label: "Analytics", href: "/admin/analytics", icon: BarChart3, color: "bg-blue-500/10 text-blue-500" },
+    { label: "Fraud Detection", href: "/admin/fraud", icon: AlertTriangle, color: "bg-red-500/10 text-red-500" },
+    { label: "Roles & Permissions", href: "/admin/roles", icon: Shield, color: "bg-purple-500/10 text-purple-500" },
   ];
 
   const recentActivities = [
@@ -43,6 +50,25 @@ const AdminDashboard = () => {
           <p className="text-muted-foreground">
             Overview of platform performance and management
           </p>
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {quickLinks.map((link, index) => (
+            <Link key={index} to={link.href}>
+              <Card className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${link.color}`}>
+                    <link.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{link.label}</p>
+                    <p className="text-sm text-muted-foreground">View details</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
 
         {/* Stats Grid */}
