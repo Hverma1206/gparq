@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { 
   FileText, Search, Download, Clock, User, Shield, Settings, AlertTriangle, 
   CheckCircle, XCircle, Eye, Monitor, Smartphone, Globe, Activity, RefreshCw,
-  Calendar, Filter, MapPin, Laptop, ChevronLeft, ChevronRight, MoreHorizontal
+  Calendar, Filter, MapPin, Laptop, ChevronLeft, ChevronRight, MoreHorizontal,
+  Mail, Bell, BellRing, Send, Trash2, Plus, Zap, Lock, AlertCircle, UserX
 } from "lucide-react";
 import {
   Select,
@@ -83,6 +85,57 @@ const AdminAuditLogs = () => {
   const [isLiveTracking, setIsLiveTracking] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const logsPerPage = 10;
+
+  // Email Alerts State
+  const [emailAlerts, setEmailAlerts] = useState({
+    enabled: true,
+    recipients: ["admin@parq.com", "security@parq.com"],
+    failedLoginThreshold: 3,
+    suspiciousActivityEnabled: true,
+    roleChangeEnabled: true,
+    permissionChangeEnabled: true,
+    bulkOperationsEnabled: true,
+    apiKeyChangeEnabled: true,
+    newDeviceLoginEnabled: true,
+    unusualLocationEnabled: true,
+    afterHoursEnabled: false,
+    afterHoursStart: "22:00",
+    afterHoursEnd: "06:00",
+  });
+  const [newRecipient, setNewRecipient] = useState("");
+  const [recentAlerts, setRecentAlerts] = useState([
+    { id: 1, type: "failed_login", message: "Multiple failed login attempts detected for admin@parq.com", ip: "45.67.89.123", location: "Unknown Location", timestamp: "Dec 27, 2025 9:30:55 AM", severity: "critical", emailSent: true },
+    { id: 2, type: "role_change", message: "Role 'Regional Manager' was created with elevated permissions", admin: "Rahul Sharma", timestamp: "Dec 26, 2025 6:00:00 PM", severity: "warning", emailSent: true },
+    { id: 3, type: "api_key", message: "Payment gateway API key was regenerated", admin: "Vikram Singh", timestamp: "Dec 26, 2025 2:00:10 PM", severity: "warning", emailSent: true },
+    { id: 4, type: "new_device", message: "New device login detected for Neha Reddy", device: "Mobile - Safari 17.0", location: "Hyderabad, India", timestamp: "Dec 26, 2025 5:30:45 PM", severity: "info", emailSent: true },
+    { id: 5, type: "bulk_operation", message: "Bulk import of 150 users performed", admin: "Rahul Sharma", timestamp: "Dec 26, 2025 3:15:00 PM", severity: "info", emailSent: true },
+  ]);
+
+  // Simulate security event detection
+  useEffect(() => {
+    if (!emailAlerts.enabled || !isLiveTracking) return;
+    
+    const interval = setInterval(() => {
+      // 10% chance to simulate a security event
+      if (Math.random() < 0.1) {
+        const events: { type: string; message: string; severity: "info" | "warning" | "critical" }[] = [
+          { type: "failed_login", message: "Failed login attempt detected", severity: "warning" },
+          { type: "suspicious_ip", message: "Login from unusual IP address", severity: "warning" },
+          { type: "new_device", message: "Login from new device detected", severity: "info" },
+        ];
+        const event = events[Math.floor(Math.random() * events.length)];
+        
+        if (event.severity === "warning" || event.severity === "critical") {
+          toast.warning(`🔔 Security Alert: ${event.message}`, {
+            description: "Email notification sent to configured recipients",
+            duration: 5000,
+          });
+        }
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [emailAlerts.enabled, isLiveTracking]);
 
   const adminUsers = [
     { id: "admin1", name: "Rahul Sharma" },
@@ -395,6 +448,58 @@ const AdminAuditLogs = () => {
     setDateRange({ from: undefined, to: undefined });
   };
 
+  const addRecipient = () => {
+    if (newRecipient && newRecipient.includes("@")) {
+      setEmailAlerts(prev => ({
+        ...prev,
+        recipients: [...prev.recipients, newRecipient]
+      }));
+      setNewRecipient("");
+      toast.success(`Added ${newRecipient} to alert recipients`);
+    } else {
+      toast.error("Please enter a valid email address");
+    }
+  };
+
+  const removeRecipient = (email: string) => {
+    setEmailAlerts(prev => ({
+      ...prev,
+      recipients: prev.recipients.filter(r => r !== email)
+    }));
+    toast.success(`Removed ${email} from alert recipients`);
+  };
+
+  const testEmailAlert = () => {
+    toast.success("Test email sent!", {
+      description: `Sent to: ${emailAlerts.recipients.join(", ")}`,
+    });
+  };
+
+  const saveAlertSettings = () => {
+    toast.success("Email alert settings saved successfully");
+  };
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case "critical": return <AlertCircle className="h-4 w-4 text-destructive" />;
+      case "warning": return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case "info": return <Bell className="h-4 w-4 text-blue-500" />;
+      default: return <Bell className="h-4 w-4" />;
+    }
+  };
+
+  const getAlertTypeIcon = (type: string) => {
+    switch (type) {
+      case "failed_login": return <Lock className="h-4 w-4" />;
+      case "role_change": return <Shield className="h-4 w-4" />;
+      case "api_key": return <Zap className="h-4 w-4" />;
+      case "new_device": return <Smartphone className="h-4 w-4" />;
+      case "bulk_operation": return <FileText className="h-4 w-4" />;
+      case "suspicious_ip": return <Globe className="h-4 w-4" />;
+      default: return <Bell className="h-4 w-4" />;
+    }
+  };
+
   return (
     <DashboardLayout type="admin">
       <div className="space-y-6">
@@ -577,6 +682,10 @@ const AdminAuditLogs = () => {
             <TabsTrigger value="security">Security Events</TabsTrigger>
             <TabsTrigger value="changes">Data Changes</TabsTrigger>
             <TabsTrigger value="failed">Failed Actions</TabsTrigger>
+            <TabsTrigger value="alerts" className="gap-2">
+              <Mail className="h-4 w-4" />
+              Email Alerts
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-4">
@@ -841,6 +950,379 @@ const AdminAuditLogs = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Email Alerts Tab */}
+          <TabsContent value="alerts" className="mt-4">
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Alert Settings */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <BellRing className="h-5 w-5 text-primary" />
+                        Email Alert Settings
+                      </CardTitle>
+                      <CardDescription>Configure when to receive email notifications for security events</CardDescription>
+                    </div>
+                    <Switch
+                      checked={emailAlerts.enabled}
+                      onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, enabled: checked }))}
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Recipients */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Alert Recipients</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="email@example.com"
+                        value={newRecipient}
+                        onChange={(e) => setNewRecipient(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addRecipient()}
+                      />
+                      <Button onClick={addRecipient} size="icon">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {emailAlerts.recipients.map(email => (
+                        <Badge key={email} variant="secondary" className="gap-2 py-1.5">
+                          <Mail className="h-3 w-3" />
+                          {email}
+                          <button onClick={() => removeRecipient(email)} className="hover:text-destructive">
+                            <XCircle className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Security Event Triggers */}
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium">Security Event Triggers</Label>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <Lock className="h-5 w-5 text-destructive" />
+                          <div>
+                            <p className="font-medium">Failed Login Attempts</p>
+                            <p className="text-sm text-muted-foreground">Alert after multiple failed logins</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={emailAlerts.failedLoginThreshold}
+                            onChange={(e) => setEmailAlerts(prev => ({ ...prev, failedLoginThreshold: parseInt(e.target.value) || 3 }))}
+                            className="w-16 text-center"
+                          />
+                          <span className="text-sm text-muted-foreground">attempts</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                          <div>
+                            <p className="font-medium">Suspicious Activity</p>
+                            <p className="text-sm text-muted-foreground">Unusual patterns or behaviors</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.suspiciousActivityEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, suspiciousActivityEnabled: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <Shield className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="font-medium">Role Changes</p>
+                            <p className="text-sm text-muted-foreground">Admin role creation or modification</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.roleChangeEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, roleChangeEnabled: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <UserX className="h-5 w-5 text-orange-500" />
+                          <div>
+                            <p className="font-medium">Permission Changes</p>
+                            <p className="text-sm text-muted-foreground">User permissions modified</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.permissionChangeEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, permissionChangeEnabled: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <Zap className="h-5 w-5 text-purple-500" />
+                          <div>
+                            <p className="font-medium">API Key Changes</p>
+                            <p className="text-sm text-muted-foreground">API key creation or regeneration</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.apiKeyChangeEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, apiKeyChangeEnabled: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-5 w-5 text-blue-500" />
+                          <div>
+                            <p className="font-medium">Bulk Operations</p>
+                            <p className="text-sm text-muted-foreground">Large-scale data imports or exports</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.bulkOperationsEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, bulkOperationsEnabled: checked }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Device & Location Alerts */}
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium">Device & Location Alerts</Label>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <Smartphone className="h-5 w-5 text-green-500" />
+                          <div>
+                            <p className="font-medium">New Device Login</p>
+                            <p className="text-sm text-muted-foreground">Login from unrecognized device</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.newDeviceLoginEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, newDeviceLoginEnabled: checked }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <Globe className="h-5 w-5 text-cyan-500" />
+                          <div>
+                            <p className="font-medium">Unusual Location</p>
+                            <p className="text-sm text-muted-foreground">Login from new geographic location</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={emailAlerts.unusualLocationEnabled}
+                          onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, unusualLocationEnabled: checked }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* After Hours Alerts */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">After-Hours Activity Alerts</Label>
+                      <Switch
+                        checked={emailAlerts.afterHoursEnabled}
+                        onCheckedChange={(checked) => setEmailAlerts(prev => ({ ...prev, afterHoursEnabled: checked }))}
+                      />
+                    </div>
+                    {emailAlerts.afterHoursEnabled && (
+                      <div className="flex items-center gap-4 p-3 rounded-lg bg-secondary/30">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">From</Label>
+                          <Input
+                            type="time"
+                            value={emailAlerts.afterHoursStart}
+                            onChange={(e) => setEmailAlerts(prev => ({ ...prev, afterHoursStart: e.target.value }))}
+                            className="w-28"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">To</Label>
+                          <Input
+                            type="time"
+                            value={emailAlerts.afterHoursEnd}
+                            onChange={(e) => setEmailAlerts(prev => ({ ...prev, afterHoursEnd: e.target.value }))}
+                            className="w-28"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4 border-t border-border">
+                    <Button onClick={testEmailAlert} variant="outline" className="gap-2">
+                      <Send className="h-4 w-4" />
+                      Send Test Email
+                    </Button>
+                    <Button onClick={saveAlertSettings} className="gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      Save Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Alerts */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                    Recent Security Alerts
+                  </CardTitle>
+                  <CardDescription>Email notifications sent for security events</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recentAlerts.map((alert) => (
+                      <motion.div
+                        key={alert.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`p-4 rounded-lg border ${
+                          alert.severity === "critical" ? "bg-destructive/5 border-destructive/20" :
+                          alert.severity === "warning" ? "bg-yellow-500/5 border-yellow-500/20" :
+                          "bg-blue-500/5 border-blue-500/20"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            alert.severity === "critical" ? "bg-destructive/10" :
+                            alert.severity === "warning" ? "bg-yellow-500/10" :
+                            "bg-blue-500/10"
+                          }`}>
+                            {getAlertTypeIcon(alert.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              {getSeverityIcon(alert.severity)}
+                              <span className="font-medium capitalize">{alert.type.replace(/_/g, " ")}</span>
+                              {alert.emailSent && (
+                                <Badge variant="outline" className="text-xs gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  Sent
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{alert.message}</p>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                              {alert.ip && (
+                                <span className="flex items-center gap-1">
+                                  <Globe className="h-3 w-3" />
+                                  {alert.ip}
+                                </span>
+                              )}
+                              {alert.location && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  {alert.location}
+                                </span>
+                              )}
+                              {alert.admin && (
+                                <span className="flex items-center gap-1">
+                                  <User className="h-3 w-3" />
+                                  {alert.admin}
+                                </span>
+                              )}
+                              {alert.device && (
+                                <span className="flex items-center gap-1">
+                                  <Smartphone className="h-3 w-3" />
+                                  {alert.device}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {alert.timestamp}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {recentAlerts.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                      <p>No recent security alerts</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Alert Statistics */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+              <Card className="bg-card border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-destructive/10">
+                      <AlertCircle className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{recentAlerts.filter(a => a.severity === "critical").length}</p>
+                      <p className="text-sm text-muted-foreground">Critical Alerts</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-yellow-500/10">
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{recentAlerts.filter(a => a.severity === "warning").length}</p>
+                      <p className="text-sm text-muted-foreground">Warnings</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-green-500/10">
+                      <Mail className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{recentAlerts.filter(a => a.emailSent).length}</p>
+                      <p className="text-sm text-muted-foreground">Emails Sent</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{emailAlerts.recipients.length}</p>
+                      <p className="text-sm text-muted-foreground">Recipients</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
 
