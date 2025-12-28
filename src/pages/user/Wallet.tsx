@@ -5,32 +5,38 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Wallet as WalletIcon, Plus, ArrowUpRight, ArrowDownLeft, 
-  CreditCard, Smartphone, Building, Gift, Clock
+  CreditCard, Smartphone, Building, Gift, Clock, Loader2
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
+import { useWallet } from "@/hooks/useWallet";
+import { format } from "date-fns";
 
 const Wallet = () => {
   const [amount, setAmount] = useState("");
+  const { balance, transactions, isLoading, addMoney, isAdding, monthlyStats } = useWallet();
 
   const quickAmounts = [100, 200, 500, 1000, 2000];
 
-  const transactions = [
-    { id: 1, type: "credit", description: "Added to wallet", amount: 500, date: "Dec 24, 2025", time: "10:30 AM" },
-    { id: 2, type: "debit", description: "Parking at Forum Mall", amount: 120, date: "Dec 24, 2025", time: "5:00 PM" },
-    { id: 3, type: "credit", description: "Refund - Cancelled Booking", amount: 180, date: "Dec 22, 2025", time: "2:15 PM" },
-    { id: 4, type: "debit", description: "Parking at Indiranagar Metro", amount: 350, date: "Dec 22, 2025", time: "6:00 PM" },
-    { id: 5, type: "credit", description: "Referral Bonus", amount: 100, date: "Dec 20, 2025", time: "11:00 AM" },
-  ];
-
   const handleAddMoney = () => {
-    if (amount && parseInt(amount) > 0) {
-      toast.success(`₹${amount} added to wallet successfully`);
+    const numAmount = parseInt(amount);
+    if (numAmount > 0) {
+      addMoney(numAmount);
       setAmount("");
     } else {
       toast.error("Please enter a valid amount");
     }
   };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout type="user">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="user">
@@ -55,17 +61,17 @@ const Wallet = () => {
                   </div>
                   <div>
                     <div className="text-sm opacity-80">Available Balance</div>
-                    <div className="font-display text-3xl font-bold">₹2,450</div>
+                    <div className="font-display text-3xl font-bold">₹{balance.toLocaleString()}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="bg-primary-foreground/10 rounded-xl p-3">
                     <div className="opacity-80 mb-1">This Month</div>
-                    <div className="font-semibold">₹1,850 spent</div>
+                    <div className="font-semibold">₹{monthlyStats.spent.toLocaleString()} spent</div>
                   </div>
                   <div className="bg-primary-foreground/10 rounded-xl p-3">
-                    <div className="opacity-80 mb-1">Savings</div>
-                    <div className="font-semibold">₹320 saved</div>
+                    <div className="opacity-80 mb-1">Credited</div>
+                    <div className="font-semibold">₹{monthlyStats.credited.toLocaleString()}</div>
                   </div>
                 </div>
               </CardContent>
@@ -108,8 +114,17 @@ const Wallet = () => {
                     ))}
                   </div>
 
-                  <Button className="w-full" size="lg" onClick={handleAddMoney}>
-                    <Plus className="h-5 w-5 mr-2" />
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    onClick={handleAddMoney}
+                    disabled={isAdding || !amount || parseInt(amount) <= 0}
+                  >
+                    {isAdding ? (
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    ) : (
+                      <Plus className="h-5 w-5 mr-2" />
+                    )}
                     Add ₹{amount || 0}
                   </Button>
                 </div>
@@ -128,7 +143,7 @@ const Wallet = () => {
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Credit/Debit Card</div>
-                    <div className="text-sm text-muted-foreground">**** 4532</div>
+                    <div className="text-sm text-muted-foreground">Add a card</div>
                   </div>
                 </button>
                 <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
@@ -137,7 +152,7 @@ const Wallet = () => {
                   </div>
                   <div className="text-left">
                     <div className="font-medium">UPI</div>
-                    <div className="text-sm text-muted-foreground">rahul@upi</div>
+                    <div className="text-sm text-muted-foreground">Link UPI ID</div>
                   </div>
                 </button>
                 <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
@@ -146,7 +161,7 @@ const Wallet = () => {
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Net Banking</div>
-                    <div className="text-sm text-muted-foreground">HDFC Bank</div>
+                    <div className="text-sm text-muted-foreground">Link bank account</div>
                   </div>
                 </button>
                 <Button variant="outline" className="w-full" onClick={() => toast.info("Add payment method coming soon!")}>
@@ -171,82 +186,95 @@ const Wallet = () => {
                     <TabsTrigger value="debits">Debits</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="all" className="space-y-4">
-                    {transactions.map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                            tx.type === "credit" ? "bg-green-500/10" : "bg-red-500/10"
-                          }`}>
-                            {tx.type === "credit" ? (
-                              <ArrowDownLeft className="h-6 w-6 text-green-500" />
-                            ) : (
-                              <ArrowUpRight className="h-6 w-6 text-red-500" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium text-foreground">{tx.description}</div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {tx.date} at {tx.time}
+                  {transactions.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <WalletIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No transactions yet</p>
+                    </div>
+                  ) : (
+                    <>
+                      <TabsContent value="all" className="space-y-4">
+                        {transactions.map((tx) => (
+                          <div
+                            key={tx.id}
+                            className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                tx.type === "credit" ? "bg-green-500/10" : "bg-red-500/10"
+                              }`}>
+                                {tx.type === "credit" ? (
+                                  <ArrowDownLeft className="h-6 w-6 text-green-500" />
+                                ) : (
+                                  <ArrowUpRight className="h-6 w-6 text-red-500" />
+                                )}
+                              </div>
+                              <div>
+                                <div className="font-medium text-foreground">{tx.description || tx.type}</div>
+                                <div className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {format(new Date(tx.created_at), "MMM d, yyyy 'at' h:mm a")}
+                                </div>
+                              </div>
+                            </div>
+                            <div className={`font-display text-lg font-semibold ${
+                              tx.type === "credit" ? "text-green-500" : "text-foreground"
+                            }`}>
+                              {tx.type === "credit" ? "+" : "-"}₹{Number(tx.amount).toLocaleString()}
                             </div>
                           </div>
-                        </div>
-                        <div className={`font-display text-lg font-semibold ${
-                          tx.type === "credit" ? "text-green-500" : "text-foreground"
-                        }`}>
-                          {tx.type === "credit" ? "+" : "-"}₹{tx.amount}
-                        </div>
-                      </div>
-                    ))}
-                  </TabsContent>
+                        ))}
+                      </TabsContent>
 
-                  <TabsContent value="credits" className="space-y-4">
-                    {transactions.filter(tx => tx.type === "credit").map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                            <ArrowDownLeft className="h-6 w-6 text-green-500" />
+                      <TabsContent value="credits" className="space-y-4">
+                        {transactions.filter(tx => tx.type === "credit").map((tx) => (
+                          <div
+                            key={tx.id}
+                            className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                                <ArrowDownLeft className="h-6 w-6 text-green-500" />
+                              </div>
+                              <div>
+                                <div className="font-medium">{tx.description || "Credit"}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {format(new Date(tx.created_at), "MMM d, yyyy")}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="font-display text-lg font-semibold text-green-500">
+                              +₹{Number(tx.amount).toLocaleString()}
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-medium">{tx.description}</div>
-                            <div className="text-sm text-muted-foreground">{tx.date}</div>
-                          </div>
-                        </div>
-                        <div className="font-display text-lg font-semibold text-green-500">
-                          +₹{tx.amount}
-                        </div>
-                      </div>
-                    ))}
-                  </TabsContent>
+                        ))}
+                      </TabsContent>
 
-                  <TabsContent value="debits" className="space-y-4">
-                    {transactions.filter(tx => tx.type === "debit").map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
-                            <ArrowUpRight className="h-6 w-6 text-red-500" />
+                      <TabsContent value="debits" className="space-y-4">
+                        {transactions.filter(tx => tx.type === "debit").map((tx) => (
+                          <div
+                            key={tx.id}
+                            className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+                                <ArrowUpRight className="h-6 w-6 text-red-500" />
+                              </div>
+                              <div>
+                                <div className="font-medium">{tx.description || "Debit"}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {format(new Date(tx.created_at), "MMM d, yyyy")}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="font-display text-lg font-semibold">
+                              -₹{Number(tx.amount).toLocaleString()}
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-medium">{tx.description}</div>
-                            <div className="text-sm text-muted-foreground">{tx.date}</div>
-                          </div>
-                        </div>
-                        <div className="font-display text-lg font-semibold">
-                          -₹{tx.amount}
-                        </div>
-                      </div>
-                    ))}
-                  </TabsContent>
+                        ))}
+                      </TabsContent>
+                    </>
+                  )}
                 </Tabs>
               </CardContent>
             </Card>
@@ -266,7 +294,12 @@ const Wallet = () => {
                       Add ₹1000 or more and get 10% cashback up to ₹100
                     </p>
                   </div>
-                  <Button onClick={() => toast.success("Offer claimed! Add ₹1000 to avail.")}>Claim Offer</Button>
+                  <Button onClick={() => {
+                    setAmount("1000");
+                    toast.success("Offer applied! Add ₹1000 to avail.");
+                  }}>
+                    Claim Offer
+                  </Button>
                 </div>
               </CardContent>
             </Card>
