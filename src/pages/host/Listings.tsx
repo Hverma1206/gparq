@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   MapPin, Plus, Star, Car, Clock, Zap, 
-  MoreVertical, Edit, Eye, Trash2, TrendingUp
+  MoreVertical, Edit, Eye, Trash2, TrendingUp, Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -14,56 +14,39 @@ import {
 } from "@/components/ui/dropdown-menu";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
+import { useParkingSpots } from "@/hooks/useParkingSpots";
 
 const Listings = () => {
-  const listings = [
-    {
-      id: 1,
-      name: "Forum Mall Parking",
-      address: "Koramangala 5th Block, Bangalore",
-      totalSpots: 50,
-      availableSpots: 12,
-      price: 40,
-      rating: 4.8,
-      reviews: 245,
-      earnings: "₹12,450",
-      status: "Active",
-      features: ["Covered", "EV Charging", "24/7"],
-      image: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400",
-    },
-    {
-      id: 2,
-      name: "Brigade Gateway Parking",
-      address: "Rajajinagar, Bangalore",
-      totalSpots: 30,
-      availableSpots: 8,
-      price: 50,
-      rating: 4.6,
-      reviews: 180,
-      earnings: "₹8,920",
-      status: "Active",
-      features: ["Covered", "Valet", "CCTV"],
-      image: "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?w=400",
-    },
-    {
-      id: 3,
-      name: "Indiranagar Parking",
-      address: "100 Feet Road, Indiranagar",
-      totalSpots: 20,
-      availableSpots: 5,
-      price: 30,
-      rating: 4.9,
-      reviews: 95,
-      earnings: "₹5,210",
-      status: "Pending",
-      features: ["Open", "Guard"],
-      image: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400",
-    },
-  ];
+  const navigate = useNavigate();
+  const { parkingSpots, isLoading, deleteSpot } = useParkingSpots(true);
 
-  const handleView = (id: number) => toast.info(`Viewing listing ${id}`);
-  const handleEdit = (id: number) => toast.info(`Editing listing ${id}`);
-  const handleDelete = (id: number) => toast.error(`Delete listing ${id}?`);
+  const handleView = (id: string) => navigate(`/host/listings/${id}`);
+  const handleEdit = (id: string) => navigate(`/host/listings/${id}/edit`);
+  const handleDelete = (id: string) => {
+    if (confirm("Are you sure you want to delete this listing?")) {
+      deleteSpot(id);
+    }
+  };
+
+  const getFeatures = (spot: any) => {
+    const features = [];
+    if (spot.is_covered) features.push("Covered");
+    if (spot.has_ev_charging) features.push("EV Charging");
+    if (spot.amenities?.includes("24/7")) features.push("24/7");
+    if (spot.amenities?.includes("CCTV")) features.push("CCTV");
+    if (spot.amenities?.includes("Valet")) features.push("Valet");
+    return features.slice(0, 3);
+  };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout type="host">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="host">
@@ -86,17 +69,23 @@ const Listings = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listings.map((listing) => (
+          {parkingSpots.map((listing) => (
             <Card key={listing.id} className="bg-card border-border overflow-hidden hover:border-primary/50 transition-colors">
-              <div className="relative h-48">
-                <img
-                  src={listing.image}
-                  alt={listing.name}
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative h-48 bg-secondary">
+                {listing.images?.[0] ? (
+                  <img
+                    src={listing.images[0]}
+                    alt={listing.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <MapPin className="h-12 w-12 text-muted-foreground opacity-50" />
+                  </div>
+                )}
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <Badge className={listing.status === "Active" ? "bg-green-500" : "bg-yellow-500"}>
-                    {listing.status}
+                  <Badge className={listing.is_active ? "bg-green-500" : "bg-yellow-500"}>
+                    {listing.is_active ? "Active" : "Pending"}
                   </Badge>
                 </div>
                 <div className="absolute top-4 left-4">
@@ -131,7 +120,7 @@ const Listings = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
-                      {listing.address}
+                      {listing.address}, {listing.city}
                     </p>
                   </div>
                 </div>
@@ -139,19 +128,19 @@ const Listings = () => {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                    <span className="font-medium">{listing.rating}</span>
-                    <span className="text-muted-foreground">({listing.reviews})</span>
+                    <span className="font-medium">{listing.rating || 0}</span>
+                    <span className="text-muted-foreground">({listing.review_count || 0})</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Car className="h-4 w-4 text-primary" />
                     <span className="text-sm">
-                      {listing.availableSpots}/{listing.totalSpots}
+                      {listing.available_spots || 0}/{listing.total_spots || 0}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {listing.features.map((feature) => (
+                  {getFeatures(listing).map((feature) => (
                     <Badge key={feature} variant="secondary" className="text-xs">
                       {feature === "EV Charging" && <Zap className="h-3 w-3 mr-1" />}
                       {feature === "24/7" && <Clock className="h-3 w-3 mr-1" />}
@@ -164,16 +153,17 @@ const Listings = () => {
                   <div>
                     <div className="text-sm text-muted-foreground">Price</div>
                     <div className="font-display text-xl font-bold text-primary">
-                      ₹{listing.price}/hr
+                      ₹{listing.price_per_hour}/hr
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">This Month</div>
-                    <div className="font-medium text-green-500 flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4" />
-                      {listing.earnings}
+                  {listing.price_per_day && (
+                    <div className="text-right">
+                      <div className="text-sm text-muted-foreground">Daily</div>
+                      <div className="font-medium text-foreground">
+                        ₹{listing.price_per_day}/day
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
