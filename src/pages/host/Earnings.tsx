@@ -1,44 +1,69 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   IndianRupee, TrendingUp, Calendar, Download, 
-  ArrowUpRight, ArrowDownRight, Building, Clock
+  ArrowUpRight, ArrowDownRight, Building, Clock, Loader2
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
+import { useBookings } from "@/hooks/useBookings";
+import { useParkingSpotStats } from "@/hooks/useParkingSpots";
+import { format } from "date-fns";
 
 const Earnings = () => {
+  const { bookings, isLoading: bookingsLoading } = useBookings();
+  const { data: spotStats, isLoading: statsLoading } = useParkingSpotStats();
+
+  const completedBookings = bookings?.filter(b => b.status === "completed") || [];
+  
+  const totalEarnings = completedBookings.reduce((sum, b) => sum + (Number(b.host_payout) || 0), 0);
+  
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonthBookings = completedBookings.filter(b => new Date(b.created_at) >= startOfMonth);
+  const thisMonthEarnings = thisMonthBookings.reduce((sum, b) => sum + (Number(b.host_payout) || 0), 0);
+
   const stats = {
-    totalEarnings: "₹45,280",
-    thisMonth: "₹12,450",
-    pending: "₹2,850",
-    withdrawn: "₹30,000",
+    totalEarnings: `₹${totalEarnings.toLocaleString()}`,
+    thisMonth: `₹${thisMonthEarnings.toLocaleString()}`,
+    pending: `₹${(spotStats?.earnings || 0).toLocaleString()}`,
+    withdrawn: "₹0",
   };
 
-  const transactions = [
-    { id: 1, type: "earning", description: "Booking #PQ123459", location: "Forum Mall", amount: 120, date: "Dec 25, 2025" },
-    { id: 2, type: "earning", description: "Booking #PQ123458", location: "Forum Mall", amount: 80, date: "Dec 25, 2025" },
-    { id: 3, type: "withdrawal", description: "Bank Transfer", location: "HDFC Bank ****4532", amount: 5000, date: "Dec 24, 2025" },
-    { id: 4, type: "earning", description: "Booking #PQ123457", location: "Brigade Gateway", amount: 150, date: "Dec 24, 2025" },
-    { id: 5, type: "earning", description: "Booking #PQ123456", location: "Forum Mall", amount: 200, date: "Dec 23, 2025" },
-  ];
+  // Generate monthly data from bookings
+  const monthlyData = Array.from({ length: 6 }, (_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - (5 - i));
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    
+    const monthBookings = completedBookings.filter(b => {
+      const bookingDate = new Date(b.created_at);
+      return bookingDate >= monthStart && bookingDate <= monthEnd;
+    });
+    
+    return {
+      month: format(date, "MMM"),
+      amount: monthBookings.reduce((sum, b) => sum + (Number(b.host_payout) || 0), 0),
+    };
+  });
 
-  const monthlyData = [
-    { month: "Jul", amount: 8500 },
-    { month: "Aug", amount: 9200 },
-    { month: "Sep", amount: 7800 },
-    { month: "Oct", amount: 10500 },
-    { month: "Nov", amount: 11200 },
-    { month: "Dec", amount: 12450 },
-  ];
-
-  const maxAmount = Math.max(...monthlyData.map(d => d.amount));
+  const maxAmount = Math.max(...monthlyData.map(d => d.amount), 1);
 
   const handleDownload = () => toast.success("Report download started");
   const handleWithdraw = () => toast.success("Withdrawal initiated");
+
+  if (bookingsLoading || statsLoading) {
+    return (
+      <DashboardLayout type="host">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="host">
@@ -73,10 +98,6 @@ const Earnings = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <Calendar className="h-8 w-8 text-primary" />
-                <span className="text-sm text-green-500 flex items-center gap-1">
-                  <TrendingUp className="h-4 w-4" />
-                  +12%
-                </span>
               </div>
               <div className="font-display text-2xl font-bold text-foreground mb-1">
                 {stats.thisMonth}
@@ -149,12 +170,12 @@ const Earnings = () => {
                 <div className="flex items-center gap-3 mb-2">
                   <Building className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <div className="font-medium">HDFC Bank</div>
-                    <div className="text-sm text-muted-foreground">****4532</div>
+                    <div className="font-medium">Bank Account</div>
+                    <div className="text-sm text-muted-foreground">Not linked</div>
                   </div>
                 </div>
-                <Button variant="link" className="p-0 h-auto text-sm" onClick={() => toast.info("Change account coming soon")}>
-                  Change Account
+                <Button variant="link" className="p-0 h-auto text-sm" onClick={() => toast.info("Link bank account coming soon")}>
+                  Link Account
                 </Button>
               </div>
             </CardContent>
@@ -175,42 +196,47 @@ const Earnings = () => {
               </TabsList>
 
               <TabsContent value="all" className="space-y-4">
-                {transactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        tx.type === "earning" ? "bg-green-500/10" : "bg-blue-500/10"
-                      }`}>
-                        {tx.type === "earning" ? (
-                          <ArrowDownRight className="h-6 w-6 text-green-500" />
-                        ) : (
-                          <ArrowUpRight className="h-6 w-6 text-blue-500" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-medium text-foreground">{tx.description}</div>
-                        <div className="text-sm text-muted-foreground">{tx.location}</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`font-display text-lg font-semibold ${
-                        tx.type === "earning" ? "text-green-500" : "text-foreground"
-                      }`}>
-                        {tx.type === "earning" ? "+" : "-"}₹{tx.amount}
-                      </div>
-                      <div className="text-sm text-muted-foreground">{tx.date}</div>
-                    </div>
+                {completedBookings.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No transactions yet</p>
                   </div>
-                ))}
+                ) : (
+                  completedBookings.slice(0, 10).map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                          <ArrowDownRight className="h-6 w-6 text-green-500" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-foreground">
+                            Booking #{booking.id.slice(0, 8).toUpperCase()}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {booking.parking_spots?.name || "Parking"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-display text-lg font-semibold text-green-500">
+                          +₹{Number(booking.host_payout || 0).toLocaleString()}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {format(new Date(booking.created_at), "MMM d, yyyy")}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </TabsContent>
 
               <TabsContent value="earnings" className="space-y-4">
-                {transactions.filter(tx => tx.type === "earning").map((tx) => (
+                {completedBookings.slice(0, 10).map((booking) => (
                   <div
-                    key={tx.id}
+                    key={booking.id}
                     className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
                   >
                     <div className="flex items-center gap-4">
@@ -218,43 +244,27 @@ const Earnings = () => {
                         <ArrowDownRight className="h-6 w-6 text-green-500" />
                       </div>
                       <div>
-                        <div className="font-medium">{tx.description}</div>
-                        <div className="text-sm text-muted-foreground">{tx.location}</div>
+                        <div className="font-medium">Booking #{booking.id.slice(0, 8).toUpperCase()}</div>
+                        <div className="text-sm text-muted-foreground">{booking.parking_spots?.name}</div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="font-display text-lg font-semibold text-green-500">
-                        +₹{tx.amount}
+                        +₹{Number(booking.host_payout || 0).toLocaleString()}
                       </div>
-                      <div className="text-sm text-muted-foreground">{tx.date}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {format(new Date(booking.created_at), "MMM d, yyyy")}
+                      </div>
                     </div>
                   </div>
                 ))}
               </TabsContent>
 
               <TabsContent value="withdrawals" className="space-y-4">
-                {transactions.filter(tx => tx.type === "withdrawal").map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                        <ArrowUpRight className="h-6 w-6 text-blue-500" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{tx.description}</div>
-                        <div className="text-sm text-muted-foreground">{tx.location}</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-display text-lg font-semibold">
-                        -₹{tx.amount}
-                      </div>
-                      <div className="text-sm text-muted-foreground">{tx.date}</div>
-                    </div>
-                  </div>
-                ))}
+                <div className="text-center py-8 text-muted-foreground">
+                  <Building className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No withdrawals yet</p>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

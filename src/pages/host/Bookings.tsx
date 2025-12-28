@@ -1,34 +1,36 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { 
   Users, Car, Calendar, Check, X, Clock, 
-  Phone, MapPin
+  Phone, MapPin, Loader2
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
+import { useBookings } from "@/hooks/useBookings";
+import { format } from "date-fns";
 
 const HostBookings = () => {
-  const bookings = {
-    requests: [
-      { id: 1, user: "Rahul S.", vehicle: "KA 01 AB 1234", vehicleType: "Sedan", spot: "Forum Mall", date: "Dec 26, 2025", time: "10:00 AM - 2:00 PM", amount: "₹160" },
-      { id: 2, user: "Priya M.", vehicle: "KA 05 CD 5678", vehicleType: "SUV", spot: "Forum Mall", date: "Dec 26, 2025", time: "2:00 PM - 6:00 PM", amount: "₹200" },
-    ],
-    active: [
-      { id: 3, user: "Amit K.", vehicle: "KA 03 EF 9012", vehicleType: "Sedan", spot: "Brigade Gateway", date: "Dec 25, 2025", time: "1:00 PM - 4:00 PM", amount: "₹150", entryTime: "1:05 PM", slot: "A-15" },
-    ],
-    upcoming: [
-      { id: 4, user: "Neha R.", vehicle: "KA 02 GH 3456", vehicleType: "Hatchback", spot: "Forum Mall", date: "Dec 27, 2025", time: "9:00 AM - 1:00 PM", amount: "₹160" },
-    ],
-    completed: [
-      { id: 5, user: "Vikram P.", vehicle: "KA 04 IJ 7890", vehicleType: "Sedan", spot: "Forum Mall", date: "Dec 24, 2025", time: "10:00 AM - 2:00 PM", amount: "₹160" },
-      { id: 6, user: "Sneha G.", vehicle: "KA 06 KL 2345", vehicleType: "SUV", spot: "Brigade Gateway", date: "Dec 24, 2025", time: "3:00 PM - 7:00 PM", amount: "₹200" },
-    ],
+  const { bookings, isLoading, updateBooking } = useBookings();
+
+  const now = new Date();
+
+  const categorizedBookings = {
+    requests: bookings?.filter(b => b.status === "pending") || [],
+    active: bookings?.filter(b => b.status === "confirmed" && new Date(b.start_time) <= now && new Date(b.end_time) >= now) || [],
+    upcoming: bookings?.filter(b => b.status === "confirmed" && new Date(b.start_time) > now) || [],
+    completed: bookings?.filter(b => b.status === "completed") || [],
   };
 
-  const handleApprove = (id: number) => toast.success(`Booking ${id} approved`);
-  const handleReject = (id: number) => toast.error(`Booking ${id} rejected`);
+  const handleApprove = (id: string) => {
+    updateBooking({ id, updates: { status: "confirmed" } });
+    toast.success("Booking approved");
+  };
+  
+  const handleReject = (id: string) => {
+    updateBooking({ id, updates: { status: "cancelled", cancellation_reason: "Rejected by host" } });
+    toast.error("Booking rejected");
+  };
+  
   const handleContact = () => toast.info("Contacting user...");
 
   const BookingCard = ({ booking, type }: { booking: any; type: string }) => (
@@ -36,13 +38,15 @@ const HostBookings = () => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="font-display font-bold text-primary">{booking.user[0]}</span>
+            <span className="font-display font-bold text-primary">
+              {booking.vehicle_number?.[0] || "P"}
+            </span>
           </div>
           <div>
-            <div className="font-medium text-foreground">{booking.user}</div>
+            <div className="font-medium text-foreground">{booking.vehicle_number}</div>
             <div className="text-sm text-muted-foreground flex items-center gap-1">
               <Car className="h-3 w-3" />
-              {booking.vehicle} • {booking.vehicleType}
+              {booking.vehicle_type || "Car"}
             </div>
           </div>
         </div>
@@ -61,28 +65,26 @@ const HostBookings = () => {
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="flex items-center gap-2 text-sm">
           <MapPin className="h-4 w-4 text-muted-foreground" />
-          <span>{booking.spot}</span>
+          <span>{booking.parking_spots?.name || "Parking"}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>{booking.date}</span>
+          <span>{format(new Date(booking.start_time), "MMM d, yyyy")}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <span>{booking.time}</span>
+          <span>{format(new Date(booking.start_time), "h:mm a")} - {format(new Date(booking.end_time), "h:mm a")}</span>
         </div>
-        <div className="font-medium text-primary">{booking.amount}</div>
+        <div className="font-medium text-primary">₹{Number(booking.total_amount).toLocaleString()}</div>
       </div>
 
       {type === "active" && (
         <div className="flex items-center justify-between pt-3 border-t border-border">
           <div className="text-sm">
-            <span className="text-muted-foreground">Slot: </span>
-            <span className="font-mono font-medium">{booking.slot}</span>
-          </div>
-          <div className="text-sm">
             <span className="text-muted-foreground">Entry: </span>
-            <span className="font-medium text-green-500">{booking.entryTime}</span>
+            <span className="font-medium text-green-500">
+              {booking.check_in_time ? format(new Date(booking.check_in_time), "h:mm a") : "Pending"}
+            </span>
           </div>
           <Button size="sm" variant="outline" className="gap-1" onClick={handleContact}>
             <Phone className="h-3 w-3" />
@@ -92,6 +94,16 @@ const HostBookings = () => {
       )}
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <DashboardLayout type="host">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="host">
@@ -109,52 +121,36 @@ const HostBookings = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="requests" className="gap-2">
               Requests
-              <span className="ml-1 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">{bookings.requests.length}</span>
+              <span className="ml-1 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
+                {categorizedBookings.requests.length}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="active" className="gap-2">
               Active
-              <span className="ml-1 bg-green-500/10 text-green-500 text-xs px-2 py-0.5 rounded-full">{bookings.active.length}</span>
+              <span className="ml-1 bg-green-500/10 text-green-500 text-xs px-2 py-0.5 rounded-full">
+                {categorizedBookings.active.length}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="requests">
-            <div className="grid md:grid-cols-2 gap-4">
-              {bookings.requests.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="requests" />
-              ))}
-            </div>
-            {bookings.requests.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                No pending booking requests
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="active">
-            <div className="grid md:grid-cols-2 gap-4">
-              {bookings.active.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="active" />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="upcoming">
-            <div className="grid md:grid-cols-2 gap-4">
-              {bookings.upcoming.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="upcoming" />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="completed">
-            <div className="grid md:grid-cols-2 gap-4">
-              {bookings.completed.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} type="completed" />
-              ))}
-            </div>
-          </TabsContent>
+          {(["requests", "active", "upcoming", "completed"] as const).map((tab) => (
+            <TabsContent key={tab} value={tab}>
+              {categorizedBookings[tab].length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No {tab} bookings</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {categorizedBookings[tab].map((booking) => (
+                    <BookingCard key={booking.id} booking={booking} type={tab} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
     </DashboardLayout>
