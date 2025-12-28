@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // Pages
 import Index from "./pages/Index";
@@ -250,101 +251,101 @@ const App = () => (
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/accessibility" element={<Accessibility />} />
           
-          {/* User Dashboard */}
-          <Route path="/user/dashboard" element={<UserDashboard />} />
+          {/* User Dashboard - Protected Routes */}
+          <Route path="/user/dashboard" element={<ProtectedRoute allowedRoles={["user", "admin"]}><UserDashboard /></ProtectedRoute>} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/user/search" element={<SearchResults />} />
           <Route path="/user/map" element={<UserMapView />} />
-          <Route path="/user/saved" element={<SavedLocations />} />
-          <Route path="/user/recent" element={<RecentLocations />} />
+          <Route path="/user/saved" element={<ProtectedRoute><SavedLocations /></ProtectedRoute>} />
+          <Route path="/user/recent" element={<ProtectedRoute><RecentLocations /></ProtectedRoute>} />
           <Route path="/parking/:id" element={<ParkingDetail />} />
-          <Route path="/user/bookings" element={<Bookings />} />
-          <Route path="/user/bookings/upcoming" element={<Bookings />} />
-          <Route path="/user/bookings/active" element={<Bookings />} />
-          <Route path="/user/bookings/completed" element={<Bookings />} />
-          <Route path="/user/wallet" element={<Wallet />} />
-          <Route path="/user/wallet/add" element={<AddMoney />} />
-          <Route path="/user/transactions" element={<Transactions />} />
-          <Route path="/user/profile" element={<Profile />} />
-          <Route path="/user/vehicles" element={<UserVehicles />} />
-          <Route path="/user/notifications" element={<UserNotifications />} />
-          <Route path="/user/booking-summary" element={<BookingSummary />} />
-          <Route path="/user/booking-success" element={<BookingSuccess />} />
-          <Route path="/user/booking-failed" element={<BookingFailed />} />
-          <Route path="/user/active-parking" element={<ActiveParking />} />
-          <Route path="/user/support" element={<UserSupport />} />
-          <Route path="/user/referral" element={<UserReferral />} />
-          <Route path="/user/settings" element={<UserSettings />} />
-          <Route path="/user/payment-methods" element={<PaymentMethods />} />
-          <Route path="/user/invoice/:id" element={<Invoice />} />
-          <Route path="/user/documents" element={<VehicleDocuments />} />
-          <Route path="/user/family" element={<FamilyAccounts />} />
-          <Route path="/user/blocked" element={<BlockedUsers />} />
-          <Route path="/user/guest-vehicle" element={<GuestVehicle />} />
-          <Route path="/user/safety" element={<SafetyPage />} />
-          <Route path="/user/fleet" element={<FleetManagement />} />
-          <Route path="/user/ev-charging" element={<EVChargingBooking />} />
-          <Route path="/user/services" element={<AddOnServices />} />
-          <Route path="/user/reviews" element={<UserReviews />} />
-          <Route path="/user/referrals" element={<ReferralProgram />} />
-          <Route path="/user/notification-settings" element={<NotificationSettings />} />
-          <Route path="/booking/:id" element={<BookingFlow />} />
+          <Route path="/user/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+          <Route path="/user/bookings/upcoming" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+          <Route path="/user/bookings/active" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+          <Route path="/user/bookings/completed" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+          <Route path="/user/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+          <Route path="/user/wallet/add" element={<ProtectedRoute><AddMoney /></ProtectedRoute>} />
+          <Route path="/user/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+          <Route path="/user/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/user/vehicles" element={<ProtectedRoute><UserVehicles /></ProtectedRoute>} />
+          <Route path="/user/notifications" element={<ProtectedRoute><UserNotifications /></ProtectedRoute>} />
+          <Route path="/user/booking-summary" element={<ProtectedRoute><BookingSummary /></ProtectedRoute>} />
+          <Route path="/user/booking-success" element={<ProtectedRoute><BookingSuccess /></ProtectedRoute>} />
+          <Route path="/user/booking-failed" element={<ProtectedRoute><BookingFailed /></ProtectedRoute>} />
+          <Route path="/user/active-parking" element={<ProtectedRoute><ActiveParking /></ProtectedRoute>} />
+          <Route path="/user/support" element={<ProtectedRoute><UserSupport /></ProtectedRoute>} />
+          <Route path="/user/referral" element={<ProtectedRoute><UserReferral /></ProtectedRoute>} />
+          <Route path="/user/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
+          <Route path="/user/payment-methods" element={<ProtectedRoute><PaymentMethods /></ProtectedRoute>} />
+          <Route path="/user/invoice/:id" element={<ProtectedRoute><Invoice /></ProtectedRoute>} />
+          <Route path="/user/documents" element={<ProtectedRoute><VehicleDocuments /></ProtectedRoute>} />
+          <Route path="/user/family" element={<ProtectedRoute><FamilyAccounts /></ProtectedRoute>} />
+          <Route path="/user/blocked" element={<ProtectedRoute><BlockedUsers /></ProtectedRoute>} />
+          <Route path="/user/guest-vehicle" element={<ProtectedRoute><GuestVehicle /></ProtectedRoute>} />
+          <Route path="/user/safety" element={<ProtectedRoute><SafetyPage /></ProtectedRoute>} />
+          <Route path="/user/fleet" element={<ProtectedRoute><FleetManagement /></ProtectedRoute>} />
+          <Route path="/user/ev-charging" element={<ProtectedRoute><EVChargingBooking /></ProtectedRoute>} />
+          <Route path="/user/services" element={<ProtectedRoute><AddOnServices /></ProtectedRoute>} />
+          <Route path="/user/reviews" element={<ProtectedRoute><UserReviews /></ProtectedRoute>} />
+          <Route path="/user/referrals" element={<ProtectedRoute><ReferralProgram /></ProtectedRoute>} />
+          <Route path="/user/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+          <Route path="/booking/:id" element={<ProtectedRoute><BookingFlow /></ProtectedRoute>} />
           
-          {/* Host Dashboard */}
+          {/* Host Dashboard - Protected Routes */}
           <Route path="/host/signup" element={<HostSignup />} />
-          <Route path="/host/pending" element={<HostPending />} />
-          <Route path="/host/kyc" element={<HostKYC />} />
-          <Route path="/host/property-proof" element={<PropertyProof />} />
-          <Route path="/host/dashboard" element={<HostDashboard />} />
-          <Route path="/host/listings" element={<HostListings />} />
-          <Route path="/host/listings/new" element={<CreateListing />} />
-          <Route path="/host/earnings" element={<HostEarnings />} />
-          <Route path="/host/bookings" element={<HostBookings />} />
-          <Route path="/host/analytics" element={<HostAnalytics />} />
-          <Route path="/host/payout-settings" element={<PayoutSettings />} />
-          <Route path="/host/payouts" element={<HostPayouts />} />
-          <Route path="/host/reviews" element={<HostReviews />} />
-          <Route path="/host/security" element={<HostSecurity />} />
-          <Route path="/host/tax" element={<TaxSummary />} />
-          <Route path="/host/settings" element={<HostSettings />} />
-          <Route path="/host/pricing" element={<DynamicPricing />} />
-          <Route path="/host/listings/:id/edit" element={<EditListing />} />
+          <Route path="/host/pending" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostPending /></ProtectedRoute>} />
+          <Route path="/host/kyc" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostKYC /></ProtectedRoute>} />
+          <Route path="/host/property-proof" element={<ProtectedRoute allowedRoles={["host", "admin"]}><PropertyProof /></ProtectedRoute>} />
+          <Route path="/host/dashboard" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostDashboard /></ProtectedRoute>} />
+          <Route path="/host/listings" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostListings /></ProtectedRoute>} />
+          <Route path="/host/listings/new" element={<ProtectedRoute allowedRoles={["host", "admin"]}><CreateListing /></ProtectedRoute>} />
+          <Route path="/host/earnings" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostEarnings /></ProtectedRoute>} />
+          <Route path="/host/bookings" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostBookings /></ProtectedRoute>} />
+          <Route path="/host/analytics" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostAnalytics /></ProtectedRoute>} />
+          <Route path="/host/payout-settings" element={<ProtectedRoute allowedRoles={["host", "admin"]}><PayoutSettings /></ProtectedRoute>} />
+          <Route path="/host/payouts" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostPayouts /></ProtectedRoute>} />
+          <Route path="/host/reviews" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostReviews /></ProtectedRoute>} />
+          <Route path="/host/security" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostSecurity /></ProtectedRoute>} />
+          <Route path="/host/tax" element={<ProtectedRoute allowedRoles={["host", "admin"]}><TaxSummary /></ProtectedRoute>} />
+          <Route path="/host/settings" element={<ProtectedRoute allowedRoles={["host", "admin"]}><HostSettings /></ProtectedRoute>} />
+          <Route path="/host/pricing" element={<ProtectedRoute allowedRoles={["host", "admin"]}><DynamicPricing /></ProtectedRoute>} />
+          <Route path="/host/listings/:id/edit" element={<ProtectedRoute allowedRoles={["host", "admin"]}><EditListing /></ProtectedRoute>} />
           
-          {/* Admin Dashboard */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/hosts" element={<AdminHosts />} />
-          <Route path="/admin/partners" element={<AdminPartners />} />
-          <Route path="/admin/vehicles" element={<AdminVehicles />} />
-          <Route path="/admin/bookings" element={<AdminBookings />} />
-          <Route path="/admin/disputes" element={<AdminDisputes />} />
-          <Route path="/admin/finance" element={<AdminFinance />} />
-          <Route path="/admin/support" element={<AdminSupport />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/approvals" element={<AdminApprovals />} />
-          <Route path="/admin/reports" element={<AdminReports />} />
-          <Route path="/admin/cities" element={<CityAdmin />} />
-          <Route path="/admin/roles" element={<RolesPermissions />} />
-          <Route path="/admin/features" element={<FeatureToggles />} />
-          <Route path="/admin/fraud" element={<FraudDetection />} />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="/admin/reviews" element={<AdminReviews />} />
-          <Route path="/admin/coupons" element={<AdminCoupons />} />
-          <Route path="/admin/notifications" element={<AdminNotifications />} />
-          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-          <Route path="/admin/profile" element={<AdminProfile />} />
+          {/* Admin Dashboard - Protected Routes */}
+          <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsers /></ProtectedRoute>} />
+          <Route path="/admin/hosts" element={<ProtectedRoute allowedRoles={["admin"]}><AdminHosts /></ProtectedRoute>} />
+          <Route path="/admin/partners" element={<ProtectedRoute allowedRoles={["admin"]}><AdminPartners /></ProtectedRoute>} />
+          <Route path="/admin/vehicles" element={<ProtectedRoute allowedRoles={["admin"]}><AdminVehicles /></ProtectedRoute>} />
+          <Route path="/admin/bookings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminBookings /></ProtectedRoute>} />
+          <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDisputes /></ProtectedRoute>} />
+          <Route path="/admin/finance" element={<ProtectedRoute allowedRoles={["admin"]}><AdminFinance /></ProtectedRoute>} />
+          <Route path="/admin/support" element={<ProtectedRoute allowedRoles={["admin"]}><AdminSupport /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>} />
+          <Route path="/admin/approvals" element={<ProtectedRoute allowedRoles={["admin"]}><AdminApprovals /></ProtectedRoute>} />
+          <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={["admin"]}><AdminReports /></ProtectedRoute>} />
+          <Route path="/admin/cities" element={<ProtectedRoute allowedRoles={["admin"]}><CityAdmin /></ProtectedRoute>} />
+          <Route path="/admin/roles" element={<ProtectedRoute allowedRoles={["admin"]}><RolesPermissions /></ProtectedRoute>} />
+          <Route path="/admin/features" element={<ProtectedRoute allowedRoles={["admin"]}><FeatureToggles /></ProtectedRoute>} />
+          <Route path="/admin/fraud" element={<ProtectedRoute allowedRoles={["admin"]}><FraudDetection /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><AdminAnalytics /></ProtectedRoute>} />
+          <Route path="/admin/reviews" element={<ProtectedRoute allowedRoles={["admin"]}><AdminReviews /></ProtectedRoute>} />
+          <Route path="/admin/coupons" element={<ProtectedRoute allowedRoles={["admin"]}><AdminCoupons /></ProtectedRoute>} />
+          <Route path="/admin/notifications" element={<ProtectedRoute allowedRoles={["admin"]}><AdminNotifications /></ProtectedRoute>} />
+          <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminAuditLogs /></ProtectedRoute>} />
+          <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProfile /></ProtectedRoute>} />
           
-          {/* Partner Portal */}
+          {/* Partner Portal - Protected Routes */}
           <Route path="/partner/signup" element={<PartnerSignup />} />
           <Route path="/partner/login" element={<PartnerLogin />} />
-          <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-          <Route path="/partner/services" element={<PartnerServices />} />
-          <Route path="/partner/earnings" element={<PartnerEarnings />} />
-          <Route path="/partner/jobs" element={<PartnerJobs />} />
-          <Route path="/partner/settings" element={<PartnerSettings />} />
-          <Route path="/partner/profile" element={<PartnerProfile />} />
-          <Route path="/partner/reviews" element={<PartnerReviews />} />
-          <Route path="/partner/analytics" element={<PartnerAnalytics />} />
+          <Route path="/partner/dashboard" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerDashboard /></ProtectedRoute>} />
+          <Route path="/partner/services" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerServices /></ProtectedRoute>} />
+          <Route path="/partner/earnings" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerEarnings /></ProtectedRoute>} />
+          <Route path="/partner/jobs" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerJobs /></ProtectedRoute>} />
+          <Route path="/partner/settings" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerSettings /></ProtectedRoute>} />
+          <Route path="/partner/profile" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerProfile /></ProtectedRoute>} />
+          <Route path="/partner/reviews" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerReviews /></ProtectedRoute>} />
+          <Route path="/partner/analytics" element={<ProtectedRoute allowedRoles={["partner", "admin"]}><PartnerAnalytics /></ProtectedRoute>} />
           
           {/* Content Pages */}
           <Route path="/blog/:slug" element={<BlogPost />} />

@@ -14,6 +14,164 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          cancellation_reason: string | null
+          check_in_time: string | null
+          check_out_time: string | null
+          created_at: string
+          end_time: string
+          host_payout: number | null
+          id: string
+          notes: string | null
+          parking_spot_id: string
+          payment_method: string | null
+          payment_status: string | null
+          platform_fee: number | null
+          qr_code: string | null
+          start_time: string
+          status: string | null
+          total_amount: number
+          updated_at: string
+          user_id: string
+          vehicle_number: string
+          vehicle_type: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          end_time: string
+          host_payout?: number | null
+          id?: string
+          notes?: string | null
+          parking_spot_id: string
+          payment_method?: string | null
+          payment_status?: string | null
+          platform_fee?: number | null
+          qr_code?: string | null
+          start_time: string
+          status?: string | null
+          total_amount: number
+          updated_at?: string
+          user_id: string
+          vehicle_number: string
+          vehicle_type?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          end_time?: string
+          host_payout?: number | null
+          id?: string
+          notes?: string | null
+          parking_spot_id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          platform_fee?: number | null
+          qr_code?: string | null
+          start_time?: string
+          status?: string | null
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          vehicle_number?: string
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_parking_spot_id_fkey"
+            columns: ["parking_spot_id"]
+            isOneToOne: false
+            referencedRelation: "parking_spots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parking_spots: {
+        Row: {
+          address: string
+          amenities: string[] | null
+          available_spots: number | null
+          city: string
+          created_at: string
+          description: string | null
+          has_ev_charging: boolean | null
+          host_id: string
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          is_covered: boolean | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          price_per_day: number | null
+          price_per_hour: number
+          rating: number | null
+          review_count: number | null
+          state: string | null
+          total_spots: number | null
+          updated_at: string
+          vehicle_types: string[] | null
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          amenities?: string[] | null
+          available_spots?: number | null
+          city: string
+          created_at?: string
+          description?: string | null
+          has_ev_charging?: boolean | null
+          host_id: string
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          is_covered?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          price_per_day?: number | null
+          price_per_hour: number
+          rating?: number | null
+          review_count?: number | null
+          state?: string | null
+          total_spots?: number | null
+          updated_at?: string
+          vehicle_types?: string[] | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          amenities?: string[] | null
+          available_spots?: number | null
+          city?: string
+          created_at?: string
+          description?: string | null
+          has_ev_charging?: boolean | null
+          host_id?: string
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          is_covered?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          price_per_day?: number | null
+          price_per_hour?: number
+          rating?: number | null
+          review_count?: number | null
+          state?: string | null
+          total_spots?: number | null
+          updated_at?: string
+          vehicle_types?: string[] | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -43,6 +201,101 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      security_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          id: string
+          ip_address: string | null
+          location: string | null
+          message: string
+          severity: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          message: string
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          message?: string
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string
+          description: string | null
+          gateway_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          payment_gateway: string | null
+          payment_method: string | null
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          created_at?: string
+          description?: string | null
+          gateway_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_gateway?: string | null
+          payment_method?: string | null
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string
+          description?: string | null
+          gateway_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_gateway?: string | null
+          payment_method?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

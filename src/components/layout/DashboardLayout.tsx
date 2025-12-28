@@ -30,9 +30,10 @@ import {
   Home, Search, Calendar, Wallet, Car,
   LayoutDashboard, List, IndianRupee, BarChart3, Plus,
   Users, Building2, FileText, Shield, Menu, Flag, MapPinned, Key,
-  AlertTriangle, Truck, TrendingUp, Zap, Sparkles, Star, Gift
+  AlertTriangle, Truck, TrendingUp, Zap, Sparkles, Star, Gift, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -98,9 +99,33 @@ const DashboardLayout = ({ children, type }: DashboardLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [notifications] = useState(3);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user, signOut } = useAuth();
 
   const menuItems = type === "user" ? userMenuItems : type === "host" ? hostMenuItems : type === "partner" ? partnerMenuItems : adminMenuItems;
   const dashboardTitle = type === "user" ? "User Dashboard" : type === "host" ? "Host Dashboard" : type === "partner" ? "Partner Dashboard" : "Admin Dashboard";
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (user?.user_metadata?.full_name) {
+      const names = user.user_metadata.full_name.split(" ");
+      return names.map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return "U";
+  };
+
+  const getUserDisplayName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    if (user?.email) {
+      return user.email.split("@")[0];
+    }
+    return "User";
+  };
 
   const handleNotificationClick = () => {
     console.log("Notifications clicked");
@@ -113,10 +138,11 @@ const DashboardLayout = ({ children, type }: DashboardLayoutProps) => {
     navigate(type === "user" ? "/user/profile" : `/${type}/settings`);
   };
 
-  const handleLogout = () => {
-    console.log("Logout clicked");
-    toast.success("Logged out successfully");
-    navigate("/");
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await signOut();
+    setIsLoggingOut(false);
+    navigate("/login");
   };
 
   const handleProfileClick = () => {
@@ -172,12 +198,12 @@ const DashboardLayout = ({ children, type }: DashboardLayoutProps) => {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-secondary transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>RS</AvatarFallback>
+                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium">Rahul S.</p>
-                    <p className="text-xs text-muted-foreground">{type === "user" ? "User" : type === "host" ? "Host" : "Admin"}</p>
+                    <p className="text-sm font-medium truncate">{getUserDisplayName()}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{type}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
@@ -193,9 +219,17 @@ const DashboardLayout = ({ children, type }: DashboardLayoutProps) => {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                <DropdownMenuItem 
+                  onClick={handleLogout} 
+                  className="cursor-pointer text-destructive"
+                  disabled={isLoggingOut}
+                >
+                  {isLoggingOut ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="mr-2 h-4 w-4" />
+                  )}
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -228,6 +262,19 @@ const DashboardLayout = ({ children, type }: DashboardLayoutProps) => {
                 </Button>
                 <Button variant="ghost" size="icon" onClick={handleSettingsClick}>
                   <Settings className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  {isLoggingOut ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <LogOut className="h-5 w-5" />
+                  )}
                 </Button>
               </div>
             </div>
