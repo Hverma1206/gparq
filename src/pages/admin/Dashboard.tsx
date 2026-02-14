@@ -3,18 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Users, MapPin, IndianRupee, Calendar, TrendingUp,
-  Eye, CheckCircle, XCircle, AlertTriangle, BarChart3, Shield
+  Eye, CheckCircle, XCircle, AlertTriangle, BarChart3, Shield, Loader2
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
+import { useAdminStats, useRecentActivity } from "@/hooks/useAdminStats";
+import { useParkingSpots } from "@/hooks/useParkingSpots";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
 
 const AdminDashboard = () => {
-  const stats = [
-    { label: "Total Users", value: "52,450", change: "+12%", icon: Users },
-    { label: "Active Hosts", value: "1,250", change: "+8%", icon: MapPin },
-    { label: "Revenue (MTD)", value: "₹12.5L", change: "+15%", icon: IndianRupee },
-    { label: "Bookings Today", value: "1,842", change: "+22%", icon: Calendar },
-  ];
+  const { data: adminStats, isLoading } = useAdminStats();
+  const { data: recentActivity, isLoading: activityLoading } = useRecentActivity();
 
   const quickLinks = [
     { label: "Analytics", href: "/admin/analytics", icon: BarChart3, color: "bg-blue-500/10 text-blue-500" },
@@ -22,23 +22,46 @@ const AdminDashboard = () => {
     { label: "Roles & Permissions", href: "/admin/roles", icon: Shield, color: "bg-purple-500/10 text-purple-500" },
   ];
 
-  const recentActivities = [
-    { id: 1, type: "user_signup", message: "New user registered: rahul@email.com", time: "2 mins ago" },
-    { id: 2, type: "booking", message: "New booking at Forum Mall Parking", time: "5 mins ago" },
-    { id: 3, type: "host_approval", message: "Host application approved: Phoenix Mall", time: "10 mins ago" },
-    { id: 4, type: "dispute", message: "New dispute raised: Booking #PQ123456", time: "15 mins ago" },
-    { id: 5, type: "payout", message: "Payout processed: ₹45,000 to Host #H1234", time: "20 mins ago" },
+  const stats = [
+    { label: "Total Users", value: adminStats?.totalUsers?.toLocaleString() || "0", icon: Users },
+    { label: "Active Hosts", value: adminStats?.activeHosts?.toLocaleString() || "0", icon: MapPin },
+    { label: "Revenue (MTD)", value: `₹${(adminStats?.monthlyRevenue || 0).toLocaleString()}`, icon: IndianRupee },
+    { label: "Bookings Today", value: adminStats?.todayBookings?.toLocaleString() || "0", icon: Calendar },
   ];
 
-  const pendingApprovals = [
-    { id: 1, name: "UB City Parking", host: "Prestige Group", spots: 100, status: "pending" },
-    { id: 2, name: "Orion Mall Parking", host: "Brigade Group", spots: 75, status: "pending" },
-    { id: 3, name: "Mantri Mall Parking", host: "Mantri Developers", spots: 60, status: "pending" },
-  ];
+  const handleApprove = async (id: string, name: string) => {
+    const { error } = await supabase
+      .from("parking_spots")
+      .update({ is_active: true })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to approve");
+    } else {
+      toast.success(`${name} approved`);
+    }
+  };
 
-  const handleApprove = (name: string) => toast.success(`${name} approved`);
-  const handleReject = (name: string) => toast.error(`${name} rejected`);
-  const handleView = (id: number) => toast.info(`Viewing activity ${id}`);
+  const handleReject = async (id: string, name: string) => {
+    const { error } = await supabase
+      .from("parking_spots")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to reject");
+    } else {
+      toast.error(`${name} rejected`);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout type="admin">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="admin">
@@ -78,10 +101,6 @@ const AdminDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <stat.icon className="h-8 w-8 text-primary" />
-                  <span className="text-sm text-green-500 flex items-center gap-1">
-                    <TrendingUp className="h-4 w-4" />
-                    {stat.change}
-                  </span>
                 </div>
                 <div className="font-display text-2xl font-bold text-foreground mb-1">
                   {stat.value}
@@ -100,34 +119,42 @@ const AdminDashboard = () => {
                 <CardTitle className="font-display text-xl">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentActivities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          activity.type === "dispute" ? "bg-yellow-500/10" :
-                          activity.type === "user_signup" ? "bg-green-500/10" : "bg-primary/10"
-                        }`}>
-                          {activity.type === "user_signup" && <Users className="h-5 w-5 text-green-500" />}
-                          {activity.type === "booking" && <Calendar className="h-5 w-5 text-primary" />}
-                          {activity.type === "host_approval" && <CheckCircle className="h-5 w-5 text-primary" />}
-                          {activity.type === "dispute" && <XCircle className="h-5 w-5 text-yellow-500" />}
-                          {activity.type === "payout" && <IndianRupee className="h-5 w-5 text-primary" />}
-                        </div>
-                        <div>
-                          <div className="font-medium text-foreground">{activity.message}</div>
-                          <div className="text-sm text-muted-foreground">{activity.time}</div>
+                {activityLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : recentActivity && recentActivity.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-4 rounded-xl bg-secondary/50"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            activity.type === "user_signup" ? "bg-green-500/10" : "bg-primary/10"
+                          }`}>
+                            {activity.type === "user_signup" ? (
+                              <Users className="h-5 w-5 text-green-500" />
+                            ) : (
+                              <Calendar className="h-5 w-5 text-primary" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium text-foreground">{activity.message}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(new Date(activity.time), { addSuffix: true })}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleView(activity.id)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No recent activity
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -138,32 +165,38 @@ const AdminDashboard = () => {
               <CardTitle className="font-display text-xl">Pending Approvals</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {pendingApprovals.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-4 rounded-xl bg-secondary/50"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium text-foreground">{item.name}</div>
-                    <span className="text-xs bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full">
-                      Pending
-                    </span>
+              {adminStats?.pendingApprovals && adminStats.pendingApprovals.length > 0 ? (
+                adminStats.pendingApprovals.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-xl bg-secondary/50"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-medium text-foreground">{item.name}</div>
+                      <span className="text-xs bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full">
+                        Pending
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-3">
+                      {item.total_spots || 0} spots
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="flex-1" onClick={() => handleApprove(item.id, item.name)}>
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex-1 text-destructive hover:text-destructive" onClick={() => handleReject(item.id, item.name)}>
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Reject
+                      </Button>
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground mb-3">
-                    {item.host} • {item.spots} spots
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" className="flex-1" onClick={() => handleApprove(item.name)}>
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1 text-destructive hover:text-destructive" onClick={() => handleReject(item.name)}>
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No pending approvals
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
         </div>

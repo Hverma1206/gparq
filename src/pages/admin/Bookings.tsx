@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -13,17 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { 
-  Calendar, Search, Filter, Eye, MoreVertical, Plus,
-  Car, MapPin, Clock, IndianRupee, CheckCircle, XCircle, AlertCircle,
-  Edit, Trash2, RefreshCw, Download
+  Calendar, Search, Eye, MoreVertical,
+  Car, MapPin, Clock, IndianRupee, CheckCircle, XCircle,
+  Download, Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,728 +23,230 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
-
-interface Booking {
-  id: string;
-  user: string;
-  userPhone: string;
-  userEmail: string;
-  host: string;
-  hostId: string;
-  vehicle: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  amount: number;
-  status: "active" | "upcoming" | "completed" | "cancelled";
-  paymentStatus: "paid" | "pending" | "refunded";
-  notes?: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 
 const AdminBookings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showViewDialog, setShowViewDialog] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  
-  const [formData, setFormData] = useState({
-    user: "",
-    userPhone: "",
-    userEmail: "",
-    host: "",
-    vehicle: "",
-    date: "",
-    startTime: "",
-    endTime: "",
-    amount: "",
-    status: "upcoming" as "active" | "upcoming" | "completed" | "cancelled",
-    notes: "",
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const queryClient = useQueryClient();
+
+  const { data: bookings, isLoading } = useQuery({
+    queryKey: ["admin-bookings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select(`*, parking_spots (id, name, address, city)`)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
+    },
   });
 
+  const now = new Date();
   const stats = {
-    total: 1256,
-    active: 42,
-    completed: 1180,
-    cancelled: 34,
+    total: bookings?.length || 0,
+    active: bookings?.filter(b => b.status === "confirmed" && new Date(b.start_time) <= now && new Date(b.end_time) >= now).length || 0,
+    completed: bookings?.filter(b => b.status === "completed").length || 0,
+    cancelled: bookings?.filter(b => b.status === "cancelled").length || 0,
   };
 
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: "BKG-2024-001",
-      user: "Rahul S.",
-      userPhone: "+91 98765 43210",
-      userEmail: "rahul@email.com",
-      host: "Forum Mall Parking",
-      hostId: "HST-001",
-      vehicle: "KA 01 AB 1234",
-      date: "Dec 27, 2025",
-      startTime: "10:00 AM",
-      endTime: "2:00 PM",
-      amount: 160,
-      status: "active",
-      paymentStatus: "paid",
-    },
-    {
-      id: "BKG-2024-002",
-      user: "Priya M.",
-      userPhone: "+91 98765 43211",
-      userEmail: "priya@email.com",
-      host: "Brigade Gateway",
-      hostId: "HST-002",
-      vehicle: "KA 05 CD 5678",
-      date: "Dec 27, 2025",
-      startTime: "2:00 PM",
-      endTime: "6:00 PM",
-      amount: 200,
-      status: "upcoming",
-      paymentStatus: "paid",
-    },
-    {
-      id: "BKG-2024-003",
-      user: "Amit K.",
-      userPhone: "+91 98765 43212",
-      userEmail: "amit@email.com",
-      host: "Forum Mall Parking",
-      hostId: "HST-001",
-      vehicle: "KA 03 EF 9012",
-      date: "Dec 26, 2025",
-      startTime: "10:00 AM",
-      endTime: "12:00 PM",
-      amount: 80,
-      status: "completed",
-      paymentStatus: "paid",
-    },
-    {
-      id: "BKG-2024-004",
-      user: "Neha R.",
-      userPhone: "+91 98765 43213",
-      userEmail: "neha@email.com",
-      host: "UB City Parking",
-      hostId: "HST-003",
-      vehicle: "KA 02 GH 3456",
-      date: "Dec 25, 2025",
-      startTime: "3:00 PM",
-      endTime: "7:00 PM",
-      amount: 240,
-      status: "cancelled",
-      paymentStatus: "refunded",
-    },
-  ]);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-500">Active</Badge>;
-      case "upcoming":
-        return <Badge className="bg-blue-500">Upcoming</Badge>;
-      case "completed":
-        return <Badge variant="secondary">Completed</Badge>;
-      case "cancelled":
-        return <Badge variant="destructive">Cancelled</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
-  const getPaymentBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return <Badge variant="outline" className="text-green-500 border-green-500">Paid</Badge>;
-      case "pending":
-        return <Badge variant="outline" className="text-yellow-500 border-yellow-500">Pending</Badge>;
-      case "refunded":
-        return <Badge variant="outline" className="text-blue-500 border-blue-500">Refunded</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const handleCreate = () => {
-    const newBooking: Booking = {
-      id: `BKG-2024-${String(bookings.length + 1).padStart(3, "0")}`,
-      user: formData.user,
-      userPhone: formData.userPhone,
-      userEmail: formData.userEmail,
-      host: formData.host,
-      hostId: "HST-NEW",
-      vehicle: formData.vehicle,
-      date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      amount: parseFloat(formData.amount) || 0,
-      status: formData.status,
-      paymentStatus: "pending",
-      notes: formData.notes,
-    };
-    setBookings([newBooking, ...bookings]);
-    setShowCreateDialog(false);
-    resetForm();
-    toast.success("Booking created successfully");
-  };
-
-  const handleEdit = () => {
-    if (!selectedBooking) return;
-    setBookings(bookings.map(b => 
-      b.id === selectedBooking.id 
-        ? { 
-            ...b, 
-            user: formData.user,
-            userPhone: formData.userPhone,
-            userEmail: formData.userEmail,
-            host: formData.host,
-            vehicle: formData.vehicle,
-            date: formData.date,
-            startTime: formData.startTime,
-            endTime: formData.endTime,
-            amount: parseFloat(formData.amount) || 0,
-            notes: formData.notes,
-          } 
-        : b
-    ));
-    setShowEditDialog(false);
-    setSelectedBooking(null);
-    resetForm();
-    toast.success("Booking updated successfully");
-  };
-
-  const handleDelete = (bookingId: string) => {
-    setBookings(bookings.filter(b => b.id !== bookingId));
-    toast.success("Booking deleted");
-  };
-
-  const handleCancel = (bookingId: string) => {
-    setBookings(bookings.map(b => 
-      b.id === bookingId ? { ...b, status: "cancelled" as const, paymentStatus: "refunded" as const } : b
-    ));
-    toast.success("Booking cancelled and refund initiated");
-  };
-
-  const handleExtend = (bookingId: string) => {
-    toast.info("Extend booking functionality - would open time picker");
-  };
-
-  const handleExport = () => {
-    toast.success("Bookings exported to CSV");
-  };
-
-  const openEditDialog = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setFormData({
-      user: booking.user,
-      userPhone: booking.userPhone,
-      userEmail: booking.userEmail,
-      host: booking.host,
-      vehicle: booking.vehicle,
-      date: booking.date,
-      startTime: booking.startTime,
-      endTime: booking.endTime,
-      amount: String(booking.amount),
-      status: booking.status,
-      notes: booking.notes || "",
-    });
-    setShowEditDialog(true);
-  };
-
-  const openViewDialog = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setShowViewDialog(true);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      user: "",
-      userPhone: "",
-      userEmail: "",
-      host: "",
-      vehicle: "",
-      date: "",
-      startTime: "",
-      endTime: "",
-      amount: "",
-      status: "upcoming",
-      notes: "",
-    });
-  };
-
-  const filteredBookings = bookings.filter(b => {
+  const filteredBookings = (bookings || []).filter(b => {
     const matchesSearch = b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.vehicle.toLowerCase().includes(searchQuery.toLowerCase());
+      b.vehicle_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.parking_spots?.name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || b.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "confirmed": return <Badge className="bg-blue-500/10 text-blue-500">Confirmed</Badge>;
+      case "completed": return <Badge className="bg-green-500/10 text-green-500">Completed</Badge>;
+      case "cancelled": return <Badge className="bg-destructive/10 text-destructive">Cancelled</Badge>;
+      default: return <Badge className="bg-yellow-500/10 text-yellow-500">{status}</Badge>;
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", id);
+    if (error) toast.error("Failed to cancel");
+    else {
+      toast.success("Booking cancelled");
+      queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <DashboardLayout type="admin">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="admin">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-              Booking Management
-            </h1>
-            <p className="text-muted-foreground">
-              Create, view, edit, and manage all platform bookings
-            </p>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Booking Management</h1>
+            <p className="text-muted-foreground">View and manage all platform bookings</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Booking
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => toast.success("Export started")}>
+            <Download className="h-4 w-4 mr-2" /> Export
+          </Button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                <span className="text-sm text-muted-foreground">Total</span>
-              </div>
-              <p className="font-display text-2xl font-bold">{stats.total.toLocaleString()}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span className="text-sm text-muted-foreground">Active</span>
-              </div>
-              <p className="font-display text-2xl font-bold">{stats.active}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-5 w-5 text-blue-500" />
-                <span className="text-sm text-muted-foreground">Completed</span>
-              </div>
-              <p className="font-display text-2xl font-bold">{stats.completed.toLocaleString()}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <XCircle className="h-5 w-5 text-red-500" />
-                <span className="text-sm text-muted-foreground">Cancelled</span>
-              </div>
-              <p className="font-display text-2xl font-bold">{stats.cancelled}</p>
-            </CardContent>
-          </Card>
+          {[
+            { label: "Total", value: stats.total, icon: Calendar, color: "text-primary" },
+            { label: "Active", value: stats.active, icon: CheckCircle, color: "text-green-500" },
+            { label: "Completed", value: stats.completed, icon: Clock, color: "text-blue-500" },
+            { label: "Cancelled", value: stats.cancelled, icon: XCircle, color: "text-red-500" },
+          ].map((s, i) => (
+            <Card key={i} className="bg-card border-border">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <s.icon className={`h-5 w-5 ${s.color}`} />
+                  <span className="text-sm text-muted-foreground">{s.label}</span>
+                </div>
+                <p className="font-display text-2xl font-bold">{s.value.toLocaleString()}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by booking ID, user, or vehicle..."
-              className="pl-10"
-            />
+            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by ID, vehicle, or location..." className="pl-10" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
+            <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="upcoming">Upcoming</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Bookings Table */}
-        <Card className="bg-card border-border">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/30">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Booking ID</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">User</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Host/Location</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Vehicle</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date & Time</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Amount</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-muted-foreground">Payment</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBookings.map((booking, index) => (
-                    <motion.tr
-                      key={booking.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.05 * index }}
-                      className="border-b border-border/50 hover:bg-secondary/20"
-                    >
-                      <td className="py-3 px-4">
-                        <span className="font-mono text-sm">{booking.id}</span>
-                      </td>
-                      <td className="py-3 px-4">
+        {/* Bookings List */}
+        <div className="space-y-4">
+          {filteredBookings.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No bookings found</p>
+            </div>
+          ) : (
+            filteredBookings.map((booking, index) => (
+              <motion.div
+                key={booking.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.03 * index }}
+              >
+                <Card className="bg-card border-border hover:border-primary/30 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <Car className="h-6 w-6 text-primary" />
+                        </div>
                         <div>
-                          <p className="font-medium">{booking.user}</p>
-                          <p className="text-xs text-muted-foreground">{booking.userPhone}</p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-mono text-sm">{booking.id.slice(0, 8).toUpperCase()}</span>
+                            {getStatusBadge(booking.status)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" /> {booking.parking_spots?.name || "Unknown"} • {booking.vehicle_number}
+                            </span>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {format(new Date(booking.start_time), "MMM d, yyyy h:mm a")} → {format(new Date(booking.end_time), "h:mm a")}
+                          </div>
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{booking.host}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="font-display text-lg font-bold">₹{Number(booking.total_amount).toLocaleString()}</div>
+                          <div className="text-sm text-muted-foreground">{booking.payment_status}</div>
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Car className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-mono text-sm">{booking.vehicle}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="text-sm">{booking.date}</p>
-                          <p className="text-xs text-muted-foreground">{booking.startTime} - {booking.endTime}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="font-medium">₹{booking.amount}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {getStatusBadge(booking.status)}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {getPaymentBadge(booking.paymentStatus)}
-                      </td>
-                      <td className="py-3 px-4 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openViewDialog(booking)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
+                            <DropdownMenuItem onClick={() => { setSelectedBooking(booking); setShowViewDialog(true); }}>
+                              <Eye className="h-4 w-4 mr-2" /> View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEditDialog(booking)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Booking
-                            </DropdownMenuItem>
-                            {(booking.status === "active" || booking.status === "upcoming") && (
+                            {booking.status === "confirmed" && (
                               <>
-                                <DropdownMenuItem onClick={() => handleExtend(booking.id)}>
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Extend Time
-                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  onClick={() => handleCancel(booking.id)}
-                                  className="text-destructive"
-                                >
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Cancel Booking
+                                <DropdownMenuItem className="text-destructive" onClick={() => handleCancel(booking.id)}>
+                                  <XCircle className="h-4 w-4 mr-2" /> Cancel
                                 </DropdownMenuItem>
                               </>
                             )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleDelete(booking.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Create Dialog */}
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Create Manual Booking</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>User Name</Label>
-                  <Input 
-                    value={formData.user} 
-                    onChange={(e) => setFormData({...formData, user: e.target.value})}
-                    placeholder="Enter user name"
-                  />
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <Input 
-                    value={formData.userPhone} 
-                    onChange={(e) => setFormData({...formData, userPhone: e.target.value})}
-                    placeholder="+91 98765 43210"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Email</Label>
-                <Input 
-                  value={formData.userEmail} 
-                  onChange={(e) => setFormData({...formData, userEmail: e.target.value})}
-                  placeholder="user@email.com"
-                />
-              </div>
-              <div>
-                <Label>Parking Location</Label>
-                <Select value={formData.host} onValueChange={(v) => setFormData({...formData, host: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select parking location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Forum Mall Parking">Forum Mall Parking</SelectItem>
-                    <SelectItem value="Brigade Gateway">Brigade Gateway</SelectItem>
-                    <SelectItem value="UB City Parking">UB City Parking</SelectItem>
-                    <SelectItem value="Phoenix Marketcity">Phoenix Marketcity</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Vehicle Number</Label>
-                <Input 
-                  value={formData.vehicle} 
-                  onChange={(e) => setFormData({...formData, vehicle: e.target.value})}
-                  placeholder="KA 01 AB 1234"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label>Date</Label>
-                  <Input 
-                    type="date"
-                    value={formData.date} 
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Start Time</Label>
-                  <Input 
-                    type="time"
-                    value={formData.startTime} 
-                    onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>End Time</Label>
-                  <Input 
-                    type="time"
-                    value={formData.endTime} 
-                    onChange={(e) => setFormData({...formData, endTime: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Amount (₹)</Label>
-                <Input 
-                  type="number"
-                  value={formData.amount} 
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  placeholder="100"
-                />
-              </div>
-              <div>
-                <Label>Notes (Optional)</Label>
-                <Textarea 
-                  value={formData.notes} 
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  placeholder="Any special instructions..."
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-              <Button onClick={handleCreate}>Create Booking</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Dialog */}
-        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Edit Booking - {selectedBooking?.id}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>User Name</Label>
-                  <Input 
-                    value={formData.user} 
-                    onChange={(e) => setFormData({...formData, user: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <Input 
-                    value={formData.userPhone} 
-                    onChange={(e) => setFormData({...formData, userPhone: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Email</Label>
-                <Input 
-                  value={formData.userEmail} 
-                  onChange={(e) => setFormData({...formData, userEmail: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label>Parking Location</Label>
-                <Select value={formData.host} onValueChange={(v) => setFormData({...formData, host: v})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Forum Mall Parking">Forum Mall Parking</SelectItem>
-                    <SelectItem value="Brigade Gateway">Brigade Gateway</SelectItem>
-                    <SelectItem value="UB City Parking">UB City Parking</SelectItem>
-                    <SelectItem value="Phoenix Marketcity">Phoenix Marketcity</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Vehicle Number</Label>
-                <Input 
-                  value={formData.vehicle} 
-                  onChange={(e) => setFormData({...formData, vehicle: e.target.value})}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label>Date</Label>
-                  <Input 
-                    type="date"
-                    value={formData.date} 
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Start Time</Label>
-                  <Input 
-                    type="time"
-                    value={formData.startTime} 
-                    onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>End Time</Label>
-                  <Input 
-                    type="time"
-                    value={formData.endTime} 
-                    onChange={(e) => setFormData({...formData, endTime: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Amount (₹)</Label>
-                <Input 
-                  type="number"
-                  value={formData.amount} 
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label>Notes</Label>
-                <Textarea 
-                  value={formData.notes} 
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
-              <Button onClick={handleEdit}>Save Changes</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+          )}
+        </div>
 
         {/* View Dialog */}
         <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Booking Details - {selectedBooking?.id}</DialogTitle>
-            </DialogHeader>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Booking Details</DialogTitle></DialogHeader>
             {selectedBooking && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(selectedBooking.status)}
-                  {getPaymentBadge(selectedBooking.paymentStatus)}
-                </div>
-                
+              <div className="space-y-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground">User</p>
-                    <p className="font-medium">{selectedBooking.user}</p>
-                    <p className="text-sm text-muted-foreground">{selectedBooking.userPhone}</p>
-                    <p className="text-sm text-muted-foreground">{selectedBooking.userEmail}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground">Parking Location</p>
-                    <p className="font-medium">{selectedBooking.host}</p>
-                    <p className="text-sm text-muted-foreground">ID: {selectedBooking.hostId}</p>
-                  </div>
+                  {[
+                    { label: "Booking ID", value: selectedBooking.id.slice(0, 8).toUpperCase() },
+                    { label: "Status", value: selectedBooking.status },
+                    { label: "Location", value: selectedBooking.parking_spots?.name },
+                    { label: "Vehicle", value: selectedBooking.vehicle_number },
+                    { label: "Start", value: format(new Date(selectedBooking.start_time), "MMM d, yyyy h:mm a") },
+                    { label: "End", value: format(new Date(selectedBooking.end_time), "MMM d, yyyy h:mm a") },
+                    { label: "Amount", value: `₹${Number(selectedBooking.total_amount).toLocaleString()}` },
+                    { label: "Payment", value: selectedBooking.payment_status },
+                  ].map((item, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-secondary/50">
+                      <div className="text-sm text-muted-foreground">{item.label}</div>
+                      <div className="font-medium">{item.value}</div>
+                    </div>
+                  ))}
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground">Vehicle</p>
-                    <p className="font-medium font-mono">{selectedBooking.vehicle}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground">Amount</p>
-                    <p className="font-medium text-lg">₹{selectedBooking.amount}</p>
-                  </div>
-                </div>
-                
-                <div className="p-3 rounded-lg bg-secondary/30">
-                  <p className="text-xs text-muted-foreground">Schedule</p>
-                  <p className="font-medium">{selectedBooking.date}</p>
-                  <p className="text-sm text-muted-foreground">{selectedBooking.startTime} - {selectedBooking.endTime}</p>
-                </div>
-
-                {selectedBooking.notes && (
-                  <div className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs text-muted-foreground">Notes</p>
-                    <p className="text-sm">{selectedBooking.notes}</p>
-                  </div>
-                )}
               </div>
             )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowViewDialog(false)}>Close</Button>
-              <Button onClick={() => { setShowViewDialog(false); openEditDialog(selectedBooking!); }}>
-                Edit Booking
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

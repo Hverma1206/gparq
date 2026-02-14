@@ -1,47 +1,68 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  IndianRupee, TrendingUp, ArrowUpRight, ArrowDownRight,
-  Calendar, Download, Wallet, CreditCard
+  IndianRupee, ArrowUpRight,
+  Download, Wallet, CreditCard, Loader2, Wrench
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 const PartnerEarnings = () => {
+  const { user } = useAuth();
+
+  const { data: jobs, isLoading } = useQuery({
+    queryKey: ["partner-earnings-jobs", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("partner_jobs")
+        .select("*")
+        .eq("partner_id", user.id)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const totalEarnings = jobs?.reduce((sum, j) => sum + Number(j.amount), 0) || 0;
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonthJobs = jobs?.filter(j => j.completed_at && new Date(j.completed_at) >= startOfMonth) || [];
+  const thisMonthEarnings = thisMonthJobs.reduce((sum, j) => sum + Number(j.amount), 0);
+
   const stats = [
-    { label: "Total Earnings", value: "₹1,45,200", change: "+12%", up: true },
-    { label: "This Month", value: "₹45,200", change: "+8%", up: true },
-    { label: "Pending Payout", value: "₹12,500", change: "", up: true },
-    { label: "Last Payout", value: "₹32,700", change: "Dec 20", up: true },
+    { label: "Total Earnings", value: `₹${totalEarnings.toLocaleString()}` },
+    { label: "This Month", value: `₹${thisMonthEarnings.toLocaleString()}` },
+    { label: "Completed Jobs", value: jobs?.length?.toString() || "0" },
+    { label: "This Month Jobs", value: thisMonthJobs.length.toString() },
   ];
 
-  const transactions = [
-    { id: 1, service: "Premium Car Wash", date: "Dec 27, 2025", amount: 499, status: "completed" },
-    { id: 2, service: "EV Charging", date: "Dec 27, 2025", amount: 350, status: "completed" },
-    { id: 3, service: "Interior Cleaning", date: "Dec 26, 2025", amount: 799, status: "completed" },
-    { id: 4, service: "Basic Wash", date: "Dec 26, 2025", amount: 249, status: "completed" },
-    { id: 5, service: "Premium Car Wash", date: "Dec 25, 2025", amount: 499, status: "completed" },
-    { id: 6, service: "Tyre Repair", date: "Dec 25, 2025", amount: 150, status: "completed" },
-  ];
-
-  const payouts = [
-    { id: 1, date: "Dec 20, 2025", amount: 32700, status: "completed", method: "Bank Transfer" },
-    { id: 2, date: "Dec 13, 2025", amount: 28500, status: "completed", method: "Bank Transfer" },
-    { id: 3, date: "Dec 6, 2025", amount: 35200, status: "completed", method: "Bank Transfer" },
-  ];
+  if (isLoading) {
+    return (
+      <DashboardLayout type="partner">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout type="partner">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-              Earnings
-            </h1>
-            <p className="text-muted-foreground">
-              Track your income and manage payouts
-            </p>
+            <h1 className="font-display text-3xl font-bold text-foreground mb-2">Earnings</h1>
+            <p className="text-muted-foreground">Track your income from completed jobs</p>
           </div>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => toast.success("Export started")}>
             <Download className="w-4 h-4" /> Export
           </Button>
         </div>
@@ -53,12 +74,6 @@ const PartnerEarnings = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <IndianRupee className="h-6 w-6 text-primary" />
-                  {stat.change && (
-                    <span className={`flex items-center text-sm ${stat.up ? 'text-green-500' : 'text-red-500'}`}>
-                      {stat.up ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                      {stat.change}
-                    </span>
-                  )}
                 </div>
                 <div className="font-display text-2xl font-bold text-foreground mb-1">
                   {stat.value}
@@ -69,40 +84,21 @@ const PartnerEarnings = () => {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Recent Transactions */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="font-display text-xl">Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {transactions.map((txn) => (
+        {/* Completed Jobs as Transactions */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="font-display text-xl">Completed Jobs</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {(jobs || []).length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Wrench className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No completed jobs yet</p>
+              </div>
+            ) : (
+              (jobs || []).slice(0, 20).map((job) => (
                 <div
-                  key={txn.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-secondary/50"
-                >
-                  <div>
-                    <div className="font-medium text-foreground">{txn.service}</div>
-                    <div className="text-sm text-muted-foreground">{txn.date}</div>
-                  </div>
-                  <div className="text-green-500 font-medium">+₹{txn.amount}</div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Payout History */}
-          <Card className="bg-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-display text-xl">Payout History</CardTitle>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Wallet className="w-4 h-4" /> Payout Settings
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {payouts.map((payout) => (
-                <div
-                  key={payout.id}
+                  key={job.id}
                   className="flex items-center justify-between p-3 rounded-xl bg-secondary/50"
                 >
                   <div className="flex items-center gap-3">
@@ -110,16 +106,18 @@ const PartnerEarnings = () => {
                       <CreditCard className="w-5 h-5 text-green-500" />
                     </div>
                     <div>
-                      <div className="font-medium text-foreground">₹{payout.amount.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">{payout.date}</div>
+                      <div className="font-medium text-foreground">Job #{job.id.slice(0, 8)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {job.completed_at ? format(new Date(job.completed_at), "MMM d, yyyy") : "N/A"}
+                      </div>
                     </div>
                   </div>
-                  <span className="text-sm text-green-500">Completed</span>
+                  <div className="text-green-500 font-medium">+₹{Number(job.amount).toLocaleString()}</div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );
